@@ -39,9 +39,11 @@ typedef struct {
     int numFrames;
     int alert;
     int path;
+    int type;
 } ENEMY;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
+enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
 
@@ -62,6 +64,7 @@ void initGhost();
 void updateGhost();
 void chase();
 void updateWeapon();
+void updateSanity();
 # 2 "game.c" 2
 # 1 "gba.h" 1
 
@@ -167,14 +170,18 @@ PLAYER player;
 WEAPON weapon;
 ENEMY ghost;
 
+int sanity;
+
 void initGame() {
     initPlayer();
     initGhost();
     timer = 0;
+    sanity = 0;
 }
 
 void updateGame() {
     updatePlayer();
+    updateSanity();
     updateGhost();
     updateWeapon();
     timer++;
@@ -371,5 +378,15 @@ void chase() {
     }
     if (collision(player.col, player.row, player.width, player.height, ghost.col, ghost.row, ghost.width, ghost.height)) {
         goToLose();
+    }
+}
+
+void updateSanity() {
+    if (timer % 5000 == 0) {
+        sanity++;
+    }
+
+    if (sanity == 10) {
+        ghost.active = 1;
     }
 }

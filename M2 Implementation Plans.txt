@@ -1,11 +1,17 @@
 Milestone 2 Implementation
+
+DAY 1
 State Machine *
 Game 
 - movement *
-- sanity meter
 - hide *
 - shoot *
 - ghost movement - 1 path *
 - ghost chase *
 Lose -> ghost collision *
 Win - shoot ghost *
+
+DAY 2
+- collision map for hiding spots
+- Large bg and complex movement
+- sanity meter (timer) *

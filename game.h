@@ -34,9 +34,11 @@ typedef struct {
     int numFrames;
     int alert;
     int path;
+    int type;
 } ENEMY;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
+enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
 
@@ -57,3 +59,4 @@ void initGhost();
 void updateGhost();
 void chase();
 void updateWeapon();
+void updateSanity();

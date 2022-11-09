@@ -74,9 +74,11 @@ initGame:
 	mov	r0, #16
 	mov	r1, #1
 	ldr	r3, .L8
-	ldr	ip, .L8+4
-	str	r2, [r3]
+	ldr	lr, .L8+4
+	ldr	ip, .L8+8
+	str	r2, [lr]
 	str	r2, [ip]
+	str	r2, [r3]
 	str	r2, [r3, #4]
 	str	r2, [r3, #24]
 	str	r2, [r3, #36]
@@ -96,6 +98,7 @@ initGame:
 .L8:
 	.word	ghost
 	.word	timer
+	.word	sanity
 	.size	initGame, .-initGame
 	.align	2
 	.global	initGhost
@@ -740,30 +743,89 @@ updateGame:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
+	ldr	r4, .L108
 	bl	updatePlayer
+	ldr	r3, [r4]
+	ldr	r2, .L108+4
+	mul	r3, r2, r3
+	ldr	r2, .L108+8
+	add	r3, r3, #3424256
+	add	r3, r3, #11712
+	cmp	r2, r3, ror #3
+	ldrcs	r2, .L108+12
+	ldrcc	r3, .L108+12
+	ldrcs	r3, [r2]
+	ldrcc	r3, [r3]
+	addcs	r3, r3, #1
+	strcs	r3, [r2]
+	cmp	r3, #10
+	moveq	r2, #1
+	ldreq	r3, .L108+16
+	streq	r2, [r3, #32]
 	bl	updateGhost
 	bl	updateWeapon
-	ldr	lr, .L105
-	ldr	ip, [lr]
-	ldr	r4, .L105+4
+	ldr	ip, [r4]
 	add	ip, ip, #1
+	str	ip, [r4]
 	mov	r3, #512
+	ldr	r4, .L108+20
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L105+8
-	str	ip, [lr]
+	ldr	r1, .L108+24
 	mov	lr, pc
 	bx	r4
 	pop	{r4, lr}
 	bx	lr
-.L106:
+.L109:
 	.align	2
-.L105:
+.L108:
 	.word	timer
+	.word	989560465
+	.word	858992
+	.word	sanity
+	.word	ghost
 	.word	DMANow
 	.word	shadowOAM
 	.size	updateGame, .-updateGame
-	.comm	ghost,52,4
+	.align	2
+	.global	updateSanity
+	.syntax unified
+	.arm
+	.fpu softvfp
+	.type	updateSanity, %function
+updateSanity:
+	@ Function supports interworking.
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	@ link register save eliminated.
+	ldr	r3, .L113
+	ldr	r2, .L113+4
+	ldr	r3, [r3]
+	mul	r3, r2, r3
+	ldr	r1, .L113+8
+	ldr	r2, .L113+12
+	add	r3, r3, #3424256
+	add	r3, r3, #11712
+	cmp	r1, r3, ror #3
+	ldr	r3, [r2]
+	addcs	r3, r3, #1
+	strcs	r3, [r2]
+	cmp	r3, #10
+	moveq	r2, #1
+	ldreq	r3, .L113+16
+	streq	r2, [r3, #32]
+	bx	lr
+.L114:
+	.align	2
+.L113:
+	.word	timer
+	.word	989560465
+	.word	858992
+	.word	sanity
+	.word	ghost
+	.size	updateSanity, .-updateSanity
+	.comm	sanity,4,4
+	.comm	ghost,56,4
 	.comm	weapon,28,4
 	.comm	player,44,4
 	.comm	shadowOAM,1024,4

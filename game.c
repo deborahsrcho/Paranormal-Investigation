@@ -6,14 +6,18 @@ PLAYER player;
 WEAPON weapon;
 ENEMY ghost;
 
+int sanity;
+
 void initGame() {
     initPlayer();
     initGhost();
     timer = 0;
+    sanity = 0;
 }
 
 void updateGame() {
     updatePlayer();
+    updateSanity();
     updateGhost();
     updateWeapon();
     timer++;
@@ -57,6 +61,7 @@ void initGhost() {
     ghost.active = 0;
     ghost.alert = 0;
     ghost.path = 0;
+    ghost.type = JINN;
 }
 
 void updatePlayer() {
@@ -213,3 +218,12 @@ void chase() {
     }
 }
 
+void updateSanity() {
+    if (timer % 5000 == 0) {
+        sanity++;
+    }
+
+    if (sanity == 10) {
+        ghost.active = 1;
+    }
+}

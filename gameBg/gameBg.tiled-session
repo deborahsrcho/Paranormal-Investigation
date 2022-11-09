@@ -1,0 +1,35 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "tilemap.tmx": {
+            "scale": 2.41953125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 255.8346787213432,
+                "y": 256.24798191798516
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/debor/Documents/School/CS2261/Milestone 2/gameBg",
+    "map.height": 32,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 64,
+    "openFiles": [
+    ],
+    "project": "gameBg.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    }
+}
