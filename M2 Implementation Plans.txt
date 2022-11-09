@@ -1,0 +1,11 @@
+Milestone 2 Implementation
+State Machine *
+Game 
+- movement *
+- sanity meter
+- hide *
+- shoot *
+- ghost movement - 1 path *
+- ghost chase *
+Lose -> ghost collision *
+Win - shoot ghost *
