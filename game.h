@@ -45,6 +45,8 @@ extern WEAPON weapon;
 extern ENEMY ghost;
 int timer;
 int path;
+int vOff;
+int hOff;
 
 void initGame();
 void updateGame();

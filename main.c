@@ -16,14 +16,12 @@ unsigned short oldButtons;
 void goToStart();
 void goToInstructions();
 void goToGame();
-//void goToGhost();
 void goToManual();
 void goToPause();
 void goToLose();
 void goToWin();
 void start();
 void instructions();
-//void ghost();
 void manual();
 void game();
 void pause();
@@ -31,7 +29,7 @@ void lose();
 void win();
 void initialize();
 
-enum {START, INSTRUCTIONS, GAME, GHOST, MANUAL, PAUSE, WIN, LOSE};
+enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
 
 int main() {
@@ -50,9 +48,6 @@ int main() {
             case GAME:
                 game();
                 break;
-            // case GHOST:
-            //     ghost();
-            //     break;
             case MANUAL:
                 manual();
                 break;
@@ -152,43 +147,7 @@ void game() {
     if(BUTTON_PRESSED(BUTTON_START)) {
         goToManual();
     }
-    // if (BUTTON_PRESSED(BUTTON_R)) {
-    //     state = GHOST;
-    // }
-    // lose con
 }
-
-// void goToGhost() {
-//     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
-//     DMANow(3, gameBgTiles, &CHARBLOCK[0], gameBgTilesLen / 2);
-//     DMANow(3, gameBgPal, PALETTE, gameBgPalLen / 2);
-//     DMANow(3, gameBgMap, &SCREENBLOCK[31], gameBgMapLen / 2);
-
-//     REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
-
-//     DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen/2);
-//     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen/2);
-
-//     for (int i = 0; i < 30; i++) {
-//         for (int j = 0; j < 20; j++) {
-//             SCREENBLOCK[31].tilemap[OFFSET(i, j, 32)] = 1;
-//         }
-//     }
-//     for (int i = 0; i < 2; i++) {
-//         for (int j = 15; j < 17; j++) {
-//             SCREENBLOCK[31].tilemap[OFFSET(i, j, 32)] = 2;
-//         }
-//     }
-
-//     waitForVBlank();
-//     state = GHOST;
-// }
-
-// void ghost() {
-//     if(BUTTON_PRESSED(BUTTON_SELECT)) {
-//         goToPause();
-//     }
-// }
 
 void goToManual() {
     waitForVBlank();

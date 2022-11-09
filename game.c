@@ -77,11 +77,17 @@ void updatePlayer() {
         }
     }
 
-    if (!ghost.alert && collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && BUTTON_HELD(BUTTON_B)) {
+    if (!ghost.alert && collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && BUTTON_PRESSED(BUTTON_B)) {
+        if (player.hidden == 0) {
+            player.hidden = 1;
+        } else {
+            player.hidden = 0;
+        }
+    } 
+    if (player.hidden) {
         shadowOAM[0].attr0 = (player.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
         shadowOAM[0].attr1 = (player.col & COLMASK) | ATTR1_SMALL;
         shadowOAM[0].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(9, 0);
-        player.hidden = 1;    
     } else {
         shadowOAM[0].attr0 = (player.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
         shadowOAM[0].attr1 = (player.col & COLMASK) | ATTR1_SMALL;

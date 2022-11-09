@@ -357,7 +357,7 @@ goToManual:
 	ldr	r3, .L49+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #4
+	mov	r2, #3
 	ldr	r3, .L49+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
@@ -439,7 +439,7 @@ goToPause:
 	ldr	r3, .L60+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #5
+	mov	r2, #4
 	ldr	r3, .L60+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
@@ -592,7 +592,7 @@ goToWin:
 	ldr	r3, .L92+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #6
+	mov	r2, #5
 	ldr	r3, .L92+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
@@ -648,7 +648,7 @@ goToLose:
 	ldr	r3, .L96+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #7
+	mov	r2, #6
 	ldr	r3, .L96+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
@@ -732,14 +732,13 @@ main:
 	strh	r0, [r5]	@ movhi
 	ldrh	r3, [r4, #48]
 	strh	r3, [r8]	@ movhi
-	cmp	r2, #7
+	cmp	r2, #6
 	ldrls	pc, [pc, r2, asl #2]
 	b	.L120
 .L113:
 	.word	.L118
 	.word	.L117
 	.word	.L116
-	.word	.L120
 	.word	.L115
 	.word	.L114
 	.word	.L112
@@ -822,5 +821,8 @@ win:
 	.comm	state,4,4
 	.comm	oldButtons,2,2
 	.comm	buttons,2,2
-	.comm	buttonTimer,4,4
+	.comm	hOff,4,4
+	.comm	vOff,4,4
+	.comm	path,4,4
+	.comm	timer,4,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"

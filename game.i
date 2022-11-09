@@ -50,6 +50,8 @@ extern WEAPON weapon;
 extern ENEMY ghost;
 int timer;
 int path;
+int vOff;
+int hOff;
 
 void initGame();
 void updateGame();
@@ -236,11 +238,17 @@ void updatePlayer() {
         }
     }
 
-    if (!ghost.alert && collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && (~((*(volatile unsigned short *)0x04000130)) & ((1<<1)))) {
+    if (!ghost.alert && collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))) {
+        if (player.hidden == 0) {
+            player.hidden = 1;
+        } else {
+            player.hidden = 0;
+        }
+    }
+    if (player.hidden) {
         shadowOAM[0].attr0 = (player.row & 0xFF) | (0 << 13) | (0 << 14);
         shadowOAM[0].attr1 = (player.col & 0x1FF) | (1 << 14);
         shadowOAM[0].attr2 = ((0)<<12) | ((0)*32+(9));
-        player.hidden = 1;
     } else {
         shadowOAM[0].attr0 = (player.row & 0xFF) | (0 << 13) | (0 << 14);
         shadowOAM[0].attr1 = (player.col & 0x1FF) | (1 << 14);

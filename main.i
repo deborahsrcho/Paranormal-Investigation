@@ -319,7 +319,6 @@ typedef struct {
     int aniState;
     int curFrame;
     int numFrames;
-    int healthTimer;
     int hidden;
 } PLAYER;
 typedef struct {
@@ -331,18 +330,43 @@ typedef struct {
     int active;
     int timer;
 } WEAPON;
+typedef struct {
+    int row;
+    int col;
+    int rdel;
+    int cdel;
+    int width;
+    int height;
+    int aniCounter;
+    int aniState;
+    int active;
+    int curFrame;
+    int numFrames;
+    int alert;
+    int path;
+} ENEMY;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
+extern void goToLose();
+extern void goToWin();
 
 extern PLAYER player;
 extern WEAPON weapon;
-int buttonTimer;
+extern ENEMY ghost;
+int timer;
+int path;
+int vOff;
+int hOff;
 
 void initGame();
 void updateGame();
 void animate();
 void updatePlayer();
 void initPlayer();
+void initGhost();
+void updateGhost();
+void chase();
+void updateWeapon();
 # 4 "main.c" 2
 # 1 "startBg.h" 1
 # 21 "startBg.h"
@@ -410,14 +434,12 @@ unsigned short oldButtons;
 void goToStart();
 void goToInstructions();
 void goToGame();
-
 void goToManual();
 void goToPause();
 void goToLose();
 void goToWin();
 void start();
 void instructions();
-
 void manual();
 void game();
 void pause();
@@ -425,7 +447,7 @@ void lose();
 void win();
 void initialize();
 
-enum {START, INSTRUCTIONS, GAME, GHOST, MANUAL, PAUSE, WIN, LOSE};
+enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
 
 int main() {
@@ -444,9 +466,6 @@ int main() {
             case GAME:
                 game();
                 break;
-
-
-
             case MANUAL:
                 manual();
                 break;
@@ -546,12 +565,8 @@ void game() {
     if((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
         goToManual();
     }
-
-
-
-
 }
-# 193 "main.c"
+
 void goToManual() {
     waitForVBlank();
     flipPage();
