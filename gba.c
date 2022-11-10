@@ -10,6 +10,10 @@ int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, i
     return rowA <= rowB + heightB - 1 && rowA + heightA - 1 >= rowB && colA <= colB + widthB - 1 && colA + widthA - 1 >= colB;
 }
 
+int collisionCheck(unsigned char *collisionMap, int mapWidth, int col, int row) {
+    return collisionMap[OFFSET(col, row, mapWidth)];
+}
+
 void waitForVBlank() {
     while (SCANLINECOUNTER >= 160);
     while (SCANLINECOUNTER < 160);

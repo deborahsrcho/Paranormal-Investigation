@@ -41,6 +41,8 @@ enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
 enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
+#define MAPWIDTH 512
+#define MAPHEIGHT 256
 
 extern PLAYER player;
 extern WEAPON weapon;
@@ -60,3 +62,7 @@ void updateGhost();
 void chase();
 void updateWeapon();
 void updateSanity();
+void drawGame();
+void drawPlayer();
+void drawWeapon();
+void drawGhost();

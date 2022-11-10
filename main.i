@@ -2,6 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
+# 35 "main.c"
 # 1 "gba.h" 1
 
 
@@ -17,9 +18,10 @@ typedef unsigned int u32;
 
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
-# 41 "gba.h"
+int collisionCheck(unsigned char *collisionMap, int mapWidth, int col, int row);
+# 42 "gba.h"
 extern volatile unsigned short *videoBuffer;
-# 66 "gba.h"
+# 67 "gba.h"
 void setPixel3(int col, int row, unsigned short color);
 void drawRect3(int col, int row, int width, int height, volatile unsigned short color);
 void fillScreen3(volatile unsigned short color);
@@ -37,7 +39,7 @@ void drawRect4(int col, int row, int width, int height, volatile unsigned char c
 void fillScreen4(volatile unsigned char colorIndex);
 void drawImage4(int col, int row, int width, int height, const unsigned short *image);
 void drawFullscreenImage4(const unsigned short *image);
-# 118 "gba.h"
+# 119 "gba.h"
 typedef struct {
  u16 tileimg[8192];
 } charblock;
@@ -46,10 +48,10 @@ typedef struct {
 typedef struct {
  u16 tilemap[1024];
 } screenblock;
-# 147 "gba.h"
+# 148 "gba.h"
 extern unsigned short oldButtons;
 extern unsigned short buttons;
-# 158 "gba.h"
+# 159 "gba.h"
 typedef volatile struct {
     volatile const void *src;
     volatile void *dst;
@@ -58,7 +60,7 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 198 "gba.h"
+# 199 "gba.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 
@@ -75,7 +77,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 255 "gba.h"
+# 256 "gba.h"
 void hideSprites();
 
 
@@ -97,9 +99,9 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 311 "gba.h"
+# 312 "gba.h"
 typedef void (*ihp)(void);
-# 2 "main.c" 2
+# 36 "main.c" 2
 # 1 "print.h" 1
 # 26 "print.h"
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
@@ -306,7 +308,7 @@ void mgba_printf(const char* string, ...);
 void mgba_break(void);
 uint8_t mgba_open(void);
 void mgba_close(void);
-# 3 "main.c" 2
+# 37 "main.c" 2
 # 1 "game.h" 1
 typedef struct {
     int row;
@@ -352,6 +354,8 @@ enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
 
+
+
 extern PLAYER player;
 extern WEAPON weapon;
 extern ENEMY ghost;
@@ -369,66 +373,71 @@ void initGhost();
 void updateGhost();
 void chase();
 void updateWeapon();
-# 4 "main.c" 2
+void updateSanity();
+void drawGame();
+void drawPlayer();
+void drawWeapon();
+void drawGhost();
+# 38 "main.c" 2
 # 1 "startBg.h" 1
 # 21 "startBg.h"
 extern const unsigned short startBgBitmap[19200];
 
 
 extern const unsigned short startBgPal[256];
-# 5 "main.c" 2
+# 39 "main.c" 2
 # 1 "instructionsBg.h" 1
 # 21 "instructionsBg.h"
 extern const unsigned short instructionsBgBitmap[19200];
 
 
 extern const unsigned short instructionsBgPal[256];
-# 6 "main.c" 2
+# 40 "main.c" 2
 # 1 "manualBg.h" 1
 # 21 "manualBg.h"
 extern const unsigned short manualBgBitmap[19200];
 
 
 extern const unsigned short manualBgPal[256];
-# 7 "main.c" 2
+# 41 "main.c" 2
 # 1 "pauseBg.h" 1
 # 21 "pauseBg.h"
 extern const unsigned short pauseBgBitmap[19200];
 
 
 extern const unsigned short pauseBgPal[256];
-# 8 "main.c" 2
+# 42 "main.c" 2
 # 1 "winBg.h" 1
 # 21 "winBg.h"
 extern const unsigned short winBgBitmap[19200];
 
 
 extern const unsigned short winBgPal[256];
-# 9 "main.c" 2
+# 43 "main.c" 2
 # 1 "loseBg.h" 1
 # 21 "loseBg.h"
 extern const unsigned short loseBgBitmap[19200];
 
 
 extern const unsigned short loseBgPal[256];
-# 10 "main.c" 2
+# 44 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 11 "main.c" 2
-# 1 "gameBg.h" 1
-# 22 "gameBg.h"
-extern const unsigned short gameBgTiles[80];
+# 45 "main.c" 2
+# 1 "background.h" 1
+# 22 "background.h"
+extern const unsigned short backgroundTiles[32];
 
 
-extern const unsigned short gameBgMap[1024];
+extern const unsigned short backgroundMap[2048];
 
 
-extern const unsigned short gameBgPal[256];
-# 12 "main.c" 2
+extern const unsigned short backgroundPal[256];
+# 46 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -535,25 +544,14 @@ void instructions() {
 
 void goToGame() {
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
-    DMANow(3, gameBgTiles, &((charblock *)0x6000000)[0], 160 / 2);
-    DMANow(3, gameBgPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, gameBgMap, &((screenblock *)0x6000000)[31], 2048 / 2);
+    DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 64 / 2);
+    DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[31], 1024*2);
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((31)<<8) | (0<<7) | (1<<14);
 
     DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);
-
-    for (int i = 0; i < 30; i++) {
-        for (int j = 0; j < 20; j++) {
-            ((screenblock *)0x6000000)[31].tilemap[((j) * (32) + (i))] = 1;
-        }
-    }
-    for (int i = 0; i < 2; i++) {
-        for (int j = 15; j < 17; j++) {
-            ((screenblock *)0x6000000)[31].tilemap[((j) * (32) + (i))] = 2;
-        }
-    }
 
     waitForVBlank();
     state = GAME;
@@ -561,6 +559,7 @@ void goToGame() {
 
 void game() {
     updateGame();
+    drawGame();
     if((!(~(oldButtons) & ((1<<2))) && (~buttons & ((1<<2))))) {
         goToPause();
     }
@@ -589,7 +588,7 @@ void manual() {
 }
 
 void goToPause() {
-     waitForVBlank();
+    waitForVBlank();
     flipPage();
     (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
     DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);

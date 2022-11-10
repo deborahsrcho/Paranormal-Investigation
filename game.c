@@ -1,5 +1,7 @@
 #include "game.h"
 #include "gba.h"
+#include "collisionmap.h"
+
 
 OBJ_ATTR shadowOAM[128];
 PLAYER player;
@@ -7,8 +9,11 @@ WEAPON weapon;
 ENEMY ghost;
 
 int sanity;
+unsigned char* collisionMap = (unsigned char*) collisionmapBitmap; 
 
 void initGame() {
+    hOff = 0;
+    vOff = 0;
     initPlayer();
     initGhost();
     timer = 0;
@@ -21,17 +26,24 @@ void updateGame() {
     updateGhost();
     updateWeapon();
     timer++;
+    REG_BG0HOFF = hOff;
+    REG_BG0VOFF = vOff;
     DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
 }
 
+void drawGame() {
+    drawPlayer();
+    drawWeapon();
+    drawGhost();
+}
 
 void initPlayer() {
     player.width = 16;
     player.height = 16;
     player.cdel = 1;
     player.rdel = 1;
-    player.col = SCREENWIDTH/2 - player.width/2;
-    player.row = SCREENHEIGHT/2 - player.height/2;
+    player.col = SCREENWIDTH/2 - player.width/2 + hOff;
+    player.row = SCREENHEIGHT/2 - player.height/2 + vOff;
     player.aniCounter = 0;
     player.curFrame = 0;
     player.numFrames = 2;
@@ -70,32 +82,50 @@ void updatePlayer() {
         if(BUTTON_HELD(BUTTON_UP) && player.row > 1) {
             player.aniState = SPRITEBACK;
             player.row -= player.rdel;
-        } else if(BUTTON_HELD(BUTTON_DOWN) && player.row + player.height < 160) {
+            if (player.row - vOff <= SCREENHEIGHT/2 && vOff - 1 >= 0) {
+                vOff--;
+            }
+        } else if(BUTTON_HELD(BUTTON_DOWN) && player.row + player.height < MAPHEIGHT) {
             player.aniState = SPRITEFRONT;
             player.row += player.rdel;
+            if (player.row - vOff >= SCREENHEIGHT/2 && (vOff + 1) < (MAPHEIGHT - SCREENHEIGHT)) {
+                vOff++;
+            }
         } else if(BUTTON_HELD(BUTTON_LEFT)  && player.col > 0) {
             player.aniState = SPRITELEFT;
             player.col -= player.cdel;
-        } else if(BUTTON_HELD(BUTTON_RIGHT) && player.col + player.width < 240) {
+            if (player.col - hOff <= SCREENWIDTH/2 && hOff - 1 >= 0) {
+                hOff--;
+            }
+        } else if(BUTTON_HELD(BUTTON_RIGHT) && player.col + player.width < MAPWIDTH) {
             player.aniState = SPRITERIGHT;
             player.col += player.cdel;
+            if (player.col - hOff >= SCREENWIDTH/2 && (hOff + 1) < (MAPWIDTH - SCREENWIDTH)) {
+                hOff++;
+            }
         }
     }
 
-    if (!ghost.alert && collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && BUTTON_PRESSED(BUTTON_B)) {
+    if (!ghost.alert && (!collisionCheck(collisionMap, MAPWIDTH, player.col, player.row) | !collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row)
+    | !collisionCheck(collisionMap, MAPWIDTH, player.col, player.row + player.height-1) | !collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row + player.height-1))
+    && BUTTON_PRESSED(BUTTON_B)) {
         if (player.hidden == 0) {
             player.hidden = 1;
         } else {
             player.hidden = 0;
         }
     } 
+    
+}
+
+void drawPlayer() {
     if (player.hidden) {
-        shadowOAM[0].attr0 = (player.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-        shadowOAM[0].attr1 = (player.col & COLMASK) | ATTR1_SMALL;
+        shadowOAM[0].attr0 = ((player.row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+        shadowOAM[0].attr1 = ((player.col - hOff) & COLMASK) | ATTR1_SMALL;
         shadowOAM[0].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(9, 0);
     } else {
-        shadowOAM[0].attr0 = (player.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-        shadowOAM[0].attr1 = (player.col & COLMASK) | ATTR1_SMALL;
+        shadowOAM[0].attr0 = ((player.row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+        shadowOAM[0].attr1 = ((player.col - hOff) & COLMASK) | ATTR1_SMALL;
         shadowOAM[0].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(player.aniState*2, 0);
         player.hidden = 0;
     }
@@ -104,7 +134,7 @@ void updatePlayer() {
 
 void updateWeapon() {
     // Button Input 
-    if (!collision(player.col, player.row, player.width, player.height, 0, 120, 16, 16) && BUTTON_PRESSED(BUTTON_B)){
+    if (BUTTON_PRESSED(BUTTON_B)){
         //weapon.active = 1;
         weapon.state = player.aniState;
         weapon.timer = 0;
@@ -146,12 +176,13 @@ void updateWeapon() {
         goToWin();
     }
     
-    // Weapon Sprite
-    shadowOAM[1].attr0 = (weapon.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-    shadowOAM[1].attr1 = (weapon.col & COLMASK) | ATTR1_MEDIUM;
-    shadowOAM[1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(weapon.state*4, 2);
 
     weapon.timer++;
+}
+void drawWeapon() {
+    shadowOAM[1].attr0 = ((weapon.row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+    shadowOAM[1].attr1 = ((weapon.col - hOff) & COLMASK) | ATTR1_MEDIUM;
+    shadowOAM[1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(weapon.state*4, 2);
 }
 
 void updateGhost() {
@@ -191,15 +222,19 @@ void updateGhost() {
         if (!player.hidden && collision(player.col - 16, player.row - 16, player.width*3, player.height*3, ghost.col, ghost.row, ghost.width, ghost.height)) {
             ghost.alert = 1;
         }
-        shadowOAM[2].attr0 = (ghost.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-        shadowOAM[2].attr1 = (ghost.col & COLMASK) | ATTR1_SMALL;
+    } 
+  
+}
+void drawGhost() {
+    if (ghost.active && timer % 100 == 0) {
+        shadowOAM[2].attr0 = ((ghost.row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+        shadowOAM[2].attr1 = ((ghost.col - hOff) & COLMASK) | ATTR1_SMALL;
         shadowOAM[2].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(ghost.aniState*2, 6);
     } else if (!ghost.active) {
-        shadowOAM[2].attr0 = (ghost.row & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-        shadowOAM[2].attr1 = (ghost.col & COLMASK) | ATTR1_SMALL;
+        shadowOAM[2].attr0 = ((ghost.row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+        shadowOAM[2].attr1 = ((ghost.col - hOff) & COLMASK) | ATTR1_SMALL;
         shadowOAM[2].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(9, 6);
     }
-    
 }
 
 void chase() {

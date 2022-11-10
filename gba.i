@@ -17,9 +17,10 @@ typedef unsigned int u32;
 
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
-# 41 "gba.h"
+int collisionCheck(unsigned char *collisionMap, int mapWidth, int col, int row);
+# 42 "gba.h"
 extern volatile unsigned short *videoBuffer;
-# 66 "gba.h"
+# 67 "gba.h"
 void setPixel3(int col, int row, unsigned short color);
 void drawRect3(int col, int row, int width, int height, volatile unsigned short color);
 void fillScreen3(volatile unsigned short color);
@@ -37,7 +38,7 @@ void drawRect4(int col, int row, int width, int height, volatile unsigned char c
 void fillScreen4(volatile unsigned char colorIndex);
 void drawImage4(int col, int row, int width, int height, const unsigned short *image);
 void drawFullscreenImage4(const unsigned short *image);
-# 118 "gba.h"
+# 119 "gba.h"
 typedef struct {
  u16 tileimg[8192];
 } charblock;
@@ -46,10 +47,10 @@ typedef struct {
 typedef struct {
  u16 tilemap[1024];
 } screenblock;
-# 147 "gba.h"
+# 148 "gba.h"
 extern unsigned short oldButtons;
 extern unsigned short buttons;
-# 158 "gba.h"
+# 159 "gba.h"
 typedef volatile struct {
     volatile const void *src;
     volatile void *dst;
@@ -58,7 +59,7 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 198 "gba.h"
+# 199 "gba.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 
@@ -75,7 +76,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 255 "gba.h"
+# 256 "gba.h"
 void hideSprites();
 
 
@@ -97,7 +98,7 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 311 "gba.h"
+# 312 "gba.h"
 typedef void (*ihp)(void);
 # 2 "gba.c" 2
 
@@ -109,6 +110,10 @@ unsigned volatile short *videoBuffer = (unsigned short *)0x6000000;
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB) {
     return rowA <= rowB + heightB - 1 && rowA + heightA - 1 >= rowB && colA <= colB + widthB - 1 && colA + widthA - 1 >= colB;
+}
+
+int collisionCheck(unsigned char *collisionMap, int mapWidth, int col, int row) {
+    return collisionMap[((row) * (mapWidth) + (col))];
 }
 
 void waitForVBlank() {

@@ -12,6 +12,7 @@ typedef unsigned int u32;
 
 // Miscellaneous Functions
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
+int collisionCheck(unsigned char *collisionMap, int mapWidth, int col, int row);
 
 
 // ---- Display ----

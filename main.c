@@ -1,4 +1,38 @@
-#include "gba.h" // Mode 0 Scaffold
+/*
+Milestone 2
+Deborah Cho
+NAVIGATING THE STATE MACHINE
+- START - press *start* while in WIN or LOSE, press *select* while in INSTRUCTIONS, press *R* while in PAUSE
+- INSTRUCTIONS - press *select* while in START
+- GAME - press *start* while in START or MANUAL, *select* while in PAUSE
+- MANUAL - press *start* while in GAME
+- PAUSE - press *select* while in GAME
+- WIN - shoot and kill the ghost in the GAME state
+- LOSE - collide with the ghost in the GAME state
+CONTROLS
+- GAME state: 
+    - up, down, left, right to move
+    - B to shoot or hide/unhide while colliding with hiding spot (green block)
+    - R to trigger ghost attack (dev only)
+    - start to go to MANUAL
+    - select to go to PAUSE
+- see above for state machine controls
+MILESTONE 2 IMPLEMENTATIONS
+- State Machine
+- Game: complex movement, hiding spots, shooting, ghost movement (one path), ghost types (as enums),
+ghost chases player, lose/win condition, sanity meter (not currently displayed)
+- Collision map for hiding spots
+NOT IMPLEMENTED
+- Conditions for ghost types - cannot be implemented until later, requires implementation of Equipment objects
+KNOWN BUGS
+- Wide background - moving to the right past the screen width will not properly display the background
+- Some flickering in when transitioning between states
+ADDITIONAL NOTES
+- the ghost attack will trigger after about 10 seconds, but for the purpose of demonstration,
+you may trigger one at any time by pressing *R*
+- I have decided to combine the GHOST state described in M1 with the GAME state
+*/
+#include "gba.h"
 #include "print.h"
 #include "game.h"
 #include "startBg.h"
@@ -8,7 +42,7 @@
 #include "winBg.h" 
 #include "loseBg.h"
 #include "spritesheet.h"
-#include "gameBg.h"
+#include "background.h"
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -115,25 +149,14 @@ void instructions() {
 
 void goToGame() {
     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
-    DMANow(3, gameBgTiles, &CHARBLOCK[0], gameBgTilesLen / 2);
-    DMANow(3, gameBgPal, PALETTE, gameBgPalLen / 2);
-    DMANow(3, gameBgMap, &SCREENBLOCK[31], gameBgMapLen / 2);
+    DMANow(3, backgroundTiles, &CHARBLOCK[0], backgroundTilesLen / 2);
+    DMANow(3, backgroundPal, PALETTE, backgroundPalLen / 2);
+    DMANow(3, backgroundMap, &SCREENBLOCK[31], 1024*2);
 
-    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
+    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_WIDE;
 
     DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen/2);
     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen/2);
-
-    for (int i = 0; i < 30; i++) {
-        for (int j = 0; j < 20; j++) {
-            SCREENBLOCK[31].tilemap[OFFSET(i, j, 32)] = 1;
-        }
-    }
-    for (int i = 0; i < 2; i++) {
-        for (int j = 15; j < 17; j++) {
-            SCREENBLOCK[31].tilemap[OFFSET(i, j, 32)] = 2;
-        }
-    }
 
     waitForVBlank();
     state = GAME;
@@ -141,6 +164,7 @@ void goToGame() {
 
 void game() {
     updateGame();
+    drawGame();
     if(BUTTON_PRESSED(BUTTON_SELECT)) {
         goToPause();
     }
@@ -169,7 +193,7 @@ void manual() {
 }
 
 void goToPause() {
-     waitForVBlank();
+    waitForVBlank();
     flipPage();
     REG_DISPCTL = MODE4 | BG2_ENABLE | DISP_BACKBUFFER;
     DMANow(3, startBgPal, PALETTE, startBgPalLen);

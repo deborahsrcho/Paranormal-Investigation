@@ -49,6 +49,21 @@ collision:
 	bx	lr
 	.size	collision, .-collision
 	.align	2
+	.global	collisionCheck
+	.syntax unified
+	.arm
+	.fpu softvfp
+	.type	collisionCheck, %function
+collisionCheck:
+	@ Function supports interworking.
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	@ link register save eliminated.
+	mla	r3, r1, r3, r0
+	ldrb	r0, [r3, r2]	@ zero_extendqisi2
+	bx	lr
+	.size	collisionCheck, .-collisionCheck
+	.align	2
 	.global	waitForVBlank
 	.syntax unified
 	.arm
@@ -60,15 +75,15 @@ waitForVBlank:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	mov	r2, #67108864
-.L10:
-	ldrh	r3, [r2, #6]
-	cmp	r3, #159
-	bhi	.L10
-	mov	r2, #67108864
 .L11:
 	ldrh	r3, [r2, #6]
 	cmp	r3, #159
-	bls	.L11
+	bhi	.L11
+	mov	r2, #67108864
+.L12:
+	ldrh	r3, [r2, #6]
+	cmp	r3, #159
+	bls	.L12
 	bx	lr
 	.size	waitForVBlank, .-waitForVBlank
 	.align	2
@@ -82,16 +97,16 @@ setPixel3:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r3, .L16
+	ldr	r3, .L17
 	rsb	r1, r1, r1, lsl #4
 	ldr	r3, [r3]
 	add	r0, r0, r1, lsl #4
 	lsl	r0, r0, #1
 	strh	r2, [r3, r0]	@ movhi
 	bx	lr
-.L17:
+.L18:
 	.align	2
-.L16:
+.L17:
 	.word	.LANCHOR0
 	.size	setPixel3, .-setPixel3
 	.align	2
@@ -108,7 +123,7 @@ drawRect3:
 	bxle	lr
 	push	{r4, r5, lr}
 	mov	lr, #0
-	ldr	r5, .L27
+	ldr	r5, .L28
 	add	ip, r1, ip
 	ldr	r3, [r5]
 	rsb	r1, r1, r1, lsl #4
@@ -119,7 +134,7 @@ drawRect3:
 	orr	r0, r2, #-2130706432
 	add	r2, r3, ip, lsl #1
 	add	r3, r3, r4, lsl #1
-.L20:
+.L21:
 	add	ip, sp, #12
 	str	lr, [r1, #44]
 	str	ip, [r1, #36]
@@ -127,12 +142,12 @@ drawRect3:
 	add	r3, r3, #480
 	cmp	r3, r2
 	str	r0, [r1, #44]
-	bne	.L20
+	bne	.L21
 	pop	{r4, r5, lr}
 	bx	lr
-.L28:
+.L29:
 	.align	2
-.L27:
+.L28:
 	.word	.LANCHOR0
 	.size	drawRect3, .-drawRect3
 	.align	2
@@ -149,10 +164,10 @@ fillScreen3:
 	str	lr, [sp, #-4]!
 	sub	sp, sp, #20
 	strh	r0, [sp, #6]	@ movhi
-	ldr	r2, .L31
+	ldr	r2, .L32
 	ldrh	lr, [sp, #6]
 	ldm	r2, {r1, r3}
-	ldr	r2, .L31+4
+	ldr	r2, .L32+4
 	add	r0, sp, #14
 	str	ip, [r3, #44]
 	str	r0, [r3, #36]
@@ -162,9 +177,9 @@ fillScreen3:
 	@ sp needed
 	ldr	lr, [sp], #4
 	bx	lr
-.L32:
+.L33:
 	.align	2
-.L31:
+.L32:
 	.word	.LANCHOR0
 	.word	-2130668032
 	.size	fillScreen3, .-fillScreen3
@@ -180,9 +195,9 @@ drawImage3:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
 	subs	lr, r3, #0
-	ble	.L33
+	ble	.L34
 	mov	r4, #0
-	ldr	r6, .L39
+	ldr	r6, .L40
 	add	lr, r1, lr
 	ldr	r3, [r6]
 	rsb	r1, r1, r1, lsl #4
@@ -195,7 +210,7 @@ drawImage3:
 	orr	lr, r2, #-2147483648
 	add	r3, r3, r5, lsl #1
 	lsl	r2, r2, #1
-.L35:
+.L36:
 	str	r4, [r1, #44]
 	str	ip, [r1, #36]
 	str	r3, [r1, #40]
@@ -203,13 +218,13 @@ drawImage3:
 	cmp	r3, r0
 	str	lr, [r1, #44]
 	add	ip, ip, r2
-	bne	.L35
-.L33:
+	bne	.L36
+.L34:
 	pop	{r4, r5, r6, lr}
 	bx	lr
-.L40:
+.L41:
 	.align	2
-.L39:
+.L40:
 	.word	.LANCHOR0
 	.size	drawImage3, .-drawImage3
 	.align	2
@@ -224,17 +239,17 @@ drawFullscreenImage3:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	mov	ip, #0
-	ldr	r2, .L42
-	ldr	r1, .L42+4
+	ldr	r2, .L43
+	ldr	r1, .L43+4
 	ldm	r2, {r2, r3}
 	str	ip, [r3, #44]
 	str	r0, [r3, #36]
 	str	r2, [r3, #40]
 	str	r1, [r3, #44]
 	bx	lr
-.L43:
+.L44:
 	.align	2
-.L42:
+.L43:
 	.word	.LANCHOR0
 	.word	-2147445248
 	.size	drawFullscreenImage3, .-drawFullscreenImage3
@@ -252,7 +267,7 @@ drawImage4:
 	bxle	lr
 	push	{r4, r5, r6, r7, lr}
 	mov	r4, #0
-	ldr	r7, .L52
+	ldr	r7, .L53
 	add	r2, r2, r2, lsr #31
 	add	r3, r1, r3
 	asr	lr, r2, #1
@@ -265,7 +280,7 @@ drawImage4:
 	add	r0, r0, r5, lsl #4
 	orr	r5, lr, #-2147483648
 	lsl	lr, lr, #1
-.L46:
+.L47:
 	add	r3, r0, r0, lsr #31
 	bic	r3, r3, #1
 	add	r0, r0, #240
@@ -276,12 +291,12 @@ drawImage4:
 	str	r3, [r2, #40]
 	add	ip, ip, lr
 	str	r5, [r2, #44]
-	bne	.L46
+	bne	.L47
 	pop	{r4, r5, r6, r7, lr}
 	bx	lr
-.L53:
+.L54:
 	.align	2
-.L52:
+.L53:
 	.word	.LANCHOR0
 	.size	drawImage4, .-drawImage4
 	.align	2
@@ -296,7 +311,7 @@ setPixel4:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	rsb	r1, r1, r1, lsl #4
-	ldr	ip, .L58
+	ldr	ip, .L59
 	add	r3, r0, r1, lsl #4
 	ldr	ip, [ip]
 	add	r3, r3, r3, lsr #31
@@ -320,9 +335,9 @@ setPixel4:
 	add	sp, sp, #8
 	@ sp needed
 	bx	lr
-.L59:
+.L60:
 	.align	2
-.L58:
+.L59:
 	.word	.LANCHOR0
 	.size	setPixel4, .-setPixel4
 	.align	2
@@ -342,7 +357,7 @@ drawRect4:
 	subs	r7, r3, #0
 	orr	ip, ip, lr, lsl #8
 	strh	ip, [sp, #22]	@ movhi
-	ble	.L60
+	ble	.L61
 	mov	r4, r2
 	mov	r10, r1
 	sub	r9, r2, #1
@@ -358,14 +373,14 @@ drawRect4:
 	orr	r2, r2, #-2130706432
 	orr	r3, r3, #-2130706432
 	mov	r5, r0
-	ldr	r9, .L79
+	ldr	r9, .L80
 	str	r1, [sp, #4]
 	str	r2, [sp, #12]
 	str	r3, [sp, #8]
 	add	r7, r7, r10
 	sub	fp, fp, #1
-	b	.L67
-.L77:
+	b	.L68
+.L78:
 	add	r2, r5, #1
 	rsb	r6, r10, r10, lsl #4
 	add	r6, r2, r6, lsl #4
@@ -375,7 +390,7 @@ drawRect4:
 	mov	r0, r5
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
 	bic	r6, r6, #1
-	bne	.L74
+	bne	.L75
 	bl	setPixel4
 	ldm	r9, {r0, r2}
 	ldr	r3, [sp, #12]
@@ -389,18 +404,18 @@ drawRect4:
 	mov	r0, fp
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
 	bl	setPixel4
-.L63:
+.L64:
 	add	r10, r10, #1
 	cmp	r10, r7
-	beq	.L60
-.L67:
+	beq	.L61
+.L68:
 	cmp	r4, #1
-	beq	.L75
-	cmp	r4, #2
 	beq	.L76
+	cmp	r4, #2
+	beq	.L77
 	ands	r0, r5, #1
 	and	r8, r4, #1
-	bne	.L77
+	bne	.L78
 	rsb	r2, r10, r10, lsl #4
 	add	r2, r5, r2, lsl #4
 	ldr	ip, [r9]
@@ -409,7 +424,7 @@ drawRect4:
 	cmp	r8, #0
 	add	r2, ip, r2
 	ldr	ip, [r9, #4]
-	bne	.L78
+	bne	.L79
 	ldr	r3, [sp, #8]
 	add	r10, r10, #1
 	add	r0, sp, #22
@@ -418,19 +433,19 @@ drawRect4:
 	str	r0, [ip, #36]
 	str	r2, [ip, #40]
 	str	r3, [ip, #44]
-	bne	.L67
-.L60:
+	bne	.L68
+.L61:
 	add	sp, sp, #28
 	@ sp needed
 	pop	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
 	bx	lr
-.L75:
+.L76:
 	mov	r1, r10
 	mov	r0, r5
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
 	bl	setPixel4
-	b	.L63
-.L78:
+	b	.L64
+.L79:
 	add	r3, sp, #22
 	str	r0, [ip, #44]
 	str	r3, [ip, #36]
@@ -441,8 +456,8 @@ drawRect4:
 	mov	r0, fp
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
 	bl	setPixel4
-	b	.L63
-.L76:
+	b	.L64
+.L77:
 	mov	r1, r10
 	mov	r0, r5
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
@@ -451,8 +466,8 @@ drawRect4:
 	ldrb	r2, [sp, #64]	@ zero_extendqisi2
 	add	r0, r5, #1
 	bl	setPixel4
-	b	.L63
-.L74:
+	b	.L64
+.L75:
 	bl	setPixel4
 	mov	r0, #0
 	ldm	r9, {r2, r3}
@@ -463,10 +478,10 @@ drawRect4:
 	ldr	r2, [sp, #4]
 	str	r6, [r3, #40]
 	str	r2, [r3, #44]
-	b	.L63
-.L80:
+	b	.L64
+.L81:
 	.align	2
-.L79:
+.L80:
 	.word	.LANCHOR0
 	.size	drawRect4, .-drawRect4
 	.align	2
@@ -483,11 +498,11 @@ fillScreen4:
 	mov	lr, #0
 	sub	sp, sp, #20
 	strb	r0, [sp, #7]
-	ldr	r1, .L83
+	ldr	r1, .L84
 	ldrb	r2, [sp, #7]	@ zero_extendqisi2
 	ldrb	ip, [sp, #7]	@ zero_extendqisi2
 	ldm	r1, {r0, r3}
-	ldr	r1, .L83+4
+	ldr	r1, .L84+4
 	orr	r2, r2, ip, lsl #8
 	add	ip, sp, #14
 	strh	r2, [sp, #14]	@ movhi
@@ -499,9 +514,9 @@ fillScreen4:
 	@ sp needed
 	ldr	lr, [sp], #4
 	bx	lr
-.L84:
+.L85:
 	.align	2
-.L83:
+.L84:
 	.word	.LANCHOR0
 	.word	-2130687232
 	.size	fillScreen4, .-fillScreen4
@@ -517,17 +532,17 @@ drawFullscreenImage4:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	mov	ip, #0
-	ldr	r2, .L86
-	ldr	r1, .L86+4
+	ldr	r2, .L87
+	ldr	r1, .L87+4
 	ldm	r2, {r2, r3}
 	str	ip, [r3, #44]
 	str	r0, [r3, #36]
 	str	r2, [r3, #40]
 	str	r1, [r3, #44]
 	bx	lr
-.L87:
+.L88:
 	.align	2
-.L86:
+.L87:
 	.word	.LANCHOR0
 	.word	-2147464448
 	.size	drawFullscreenImage4, .-drawFullscreenImage4
@@ -545,17 +560,17 @@ flipPage:
 	mov	r3, #67108864
 	ldrh	r1, [r3]
 	tst	r1, #16
-	ldr	r2, .L91
+	ldr	r2, .L92
 	moveq	r2, #100663296
-	ldr	r1, .L91+4
+	ldr	r1, .L92+4
 	str	r2, [r1]
 	ldrh	r2, [r3]
 	eor	r2, r2, #16
 	strh	r2, [r3]	@ movhi
 	bx	lr
-.L92:
+.L93:
 	.align	2
-.L91:
+.L92:
 	.word	100704256
 	.word	.LANCHOR0
 	.size	flipPage, .-flipPage
@@ -571,7 +586,7 @@ DMANow:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
 	mov	r4, #0
-	ldr	ip, .L95
+	ldr	ip, .L96
 	ldr	lr, [ip, #4]
 	add	r0, r0, r0, lsl #1
 	add	ip, lr, r0, lsl #2
@@ -583,9 +598,9 @@ DMANow:
 	pop	{r4, lr}
 	str	r3, [ip, #8]
 	bx	lr
-.L96:
+.L97:
 	.align	2
-.L95:
+.L96:
 	.word	.LANCHOR0
 	.size	DMANow, .-DMANow
 	.align	2
@@ -600,16 +615,16 @@ hideSprites:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	mov	r1, #512
-	ldr	r3, .L101
+	ldr	r3, .L102
 	add	r2, r3, #1024
-.L98:
+.L99:
 	strh	r1, [r3], #8	@ movhi
 	cmp	r3, r2
-	bne	.L98
+	bne	.L99
 	bx	lr
-.L102:
+.L103:
 	.align	2
-.L101:
+.L102:
 	.word	shadowOAM
 	.size	hideSprites, .-hideSprites
 	.global	dma

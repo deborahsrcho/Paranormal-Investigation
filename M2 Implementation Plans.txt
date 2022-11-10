@@ -12,6 +12,6 @@ Lose -> ghost collision *
 Win - shoot ghost *
 
 DAY 2
-- collision map for hiding spots
+- collision map for hiding spots *
 - Large bg and complex movement
-- sanity meter (timer) *
+- sanity meter (timer) * 
