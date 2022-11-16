@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
-# 35 "main.c"
+# 38 "main.c"
 # 1 "gba.h" 1
 
 
@@ -101,7 +101,7 @@ typedef struct {
 } ANISPRITE;
 # 312 "gba.h"
 typedef void (*ihp)(void);
-# 36 "main.c" 2
+# 39 "main.c" 2
 # 1 "print.h" 1
 # 26 "print.h"
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
@@ -308,7 +308,7 @@ void mgba_printf(const char* string, ...);
 void mgba_break(void);
 uint8_t mgba_open(void);
 void mgba_close(void);
-# 37 "main.c" 2
+# 40 "main.c" 2
 # 1 "game.h" 1
 typedef struct {
     int row;
@@ -330,6 +330,7 @@ typedef struct {
     int height;
     int state;
     int active;
+    int equipped;
     int timer;
 } WEAPON;
 typedef struct {
@@ -345,9 +346,43 @@ typedef struct {
     int curFrame;
     int numFrames;
     int alert;
+    int route;
     int path;
     int type;
 } ENEMY;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int state;
+    int equipped;
+} EMF;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+    int state;
+    int randvar;
+} EQUIPMENT;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+    int state;
+    int randvar;
+    int temperature;
+} THERMOMETER;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+} GHOSTSPOT;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
 enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
@@ -359,10 +394,24 @@ extern void goToWin();
 extern PLAYER player;
 extern WEAPON weapon;
 extern ENEMY ghost;
-int timer;
+extern GHOSTSPOT ghostspot;
+extern EMF EMFReader;
+extern THERMOMETER thermometer;
+extern EQUIPMENT ghostbook;
+extern EQUIPMENT videocam;
+extern EQUIPMENT spiritbox;
+extern EQUIPMENT uvlight;
+extern GHOSTSPOT ghostspot;
 int path;
 int vOff;
 int hOff;
+int sanityTimer;
+int sanity;
+int seconds;
+int buttonTimer;
+
+int ones;
+int tens;
 
 void initGame();
 void updateGame();
@@ -374,60 +423,70 @@ void updateGhost();
 void chase();
 void updateWeapon();
 void updateSanity();
+void drawSanity();
 void drawGame();
 void drawPlayer();
 void drawWeapon();
 void drawGhost();
-# 38 "main.c" 2
+void initEquipment();
+void initghostSpot();
+void updateEMFReader();
+void drawEMFReader();
+void drawEquipment();
+void interruptHandler();
+void enableTimerInterrupts();
+void setupInterrupts();
+void updateThermometer();
+# 41 "main.c" 2
 # 1 "startBg.h" 1
 # 21 "startBg.h"
 extern const unsigned short startBgBitmap[19200];
 
 
 extern const unsigned short startBgPal[256];
-# 39 "main.c" 2
+# 42 "main.c" 2
 # 1 "instructionsBg.h" 1
 # 21 "instructionsBg.h"
 extern const unsigned short instructionsBgBitmap[19200];
 
 
 extern const unsigned short instructionsBgPal[256];
-# 40 "main.c" 2
+# 43 "main.c" 2
 # 1 "manualBg.h" 1
 # 21 "manualBg.h"
 extern const unsigned short manualBgBitmap[19200];
 
 
 extern const unsigned short manualBgPal[256];
-# 41 "main.c" 2
+# 44 "main.c" 2
 # 1 "pauseBg.h" 1
 # 21 "pauseBg.h"
 extern const unsigned short pauseBgBitmap[19200];
 
 
 extern const unsigned short pauseBgPal[256];
-# 42 "main.c" 2
+# 45 "main.c" 2
 # 1 "winBg.h" 1
 # 21 "winBg.h"
 extern const unsigned short winBgBitmap[19200];
 
 
 extern const unsigned short winBgPal[256];
-# 43 "main.c" 2
+# 46 "main.c" 2
 # 1 "loseBg.h" 1
 # 21 "loseBg.h"
 extern const unsigned short loseBgBitmap[19200];
 
 
 extern const unsigned short loseBgPal[256];
-# 44 "main.c" 2
+# 47 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 45 "main.c" 2
+# 48 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[32];
@@ -437,7 +496,7 @@ extern const unsigned short backgroundMap[2048];
 
 
 extern const unsigned short backgroundPal[256];
-# 46 "main.c" 2
+# 49 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -460,6 +519,7 @@ void initialize();
 
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
+int seed;
 
 int main() {
     initialize();
@@ -515,7 +575,9 @@ void goToStart() {
 }
 
 void start() {
+    seed++;
     if ((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
+        srand(seed);
         goToGame();
         initGame();
     }
@@ -546,9 +608,9 @@ void goToGame() {
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
     DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 64 / 2);
     DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[31], 1024*2);
+    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[20], 1024*2);
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((31)<<8) | (0<<7) | (1<<14);
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((20)<<8) | (0<<7) | (1<<14);
 
     DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);

@@ -214,7 +214,7 @@ goToGame:
 	ldr	r1, .L27+16
 	mov	lr, pc
 	bx	r4
-	mov	r2, #24320
+	mov	r2, #21504
 	mov	r3, #256
 	strh	r2, [r5, #8]	@ movhi
 	mov	r0, #3
@@ -242,7 +242,7 @@ goToGame:
 	.word	DMANow
 	.word	backgroundTiles
 	.word	backgroundPal
-	.word	100726784
+	.word	100704256
 	.word	backgroundMap
 	.word	83886592
 	.word	spritesheetPal
@@ -262,18 +262,22 @@ start:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
-	ldr	r4, .L41
+	ldr	r2, .L41
+	ldr	r4, .L41+4
+	ldr	r0, [r2]
 	ldrh	r3, [r4]
+	add	r0, r0, #1
 	tst	r3, #8
+	str	r0, [r2]
 	beq	.L30
-	ldr	r2, .L41+4
+	ldr	r2, .L41+8
 	ldrh	r2, [r2]
 	tst	r2, #8
 	beq	.L39
 .L30:
 	tst	r3, #4
 	beq	.L29
-	ldr	r3, .L41+4
+	ldr	r3, .L41+8
 	ldrh	r3, [r3]
 	tst	r3, #4
 	beq	.L40
@@ -284,8 +288,11 @@ start:
 	pop	{r4, lr}
 	b	goToInstructions
 .L39:
+	ldr	r3, .L41+12
+	mov	lr, pc
+	bx	r3
 	bl	goToGame
-	ldr	r3, .L41+8
+	ldr	r3, .L41+16
 	mov	lr, pc
 	bx	r3
 	ldrh	r3, [r4]
@@ -293,8 +300,10 @@ start:
 .L42:
 	.align	2
 .L41:
+	.word	seed
 	.word	oldButtons
 	.word	buttons
+	.word	srand
 	.word	initGame
 	.size	start, .-start
 	.align	2
@@ -800,11 +809,17 @@ win:
 	@ link register save eliminated.
 	b	lose
 	.size	win, .-win
+	.comm	seed,4,4
 	.comm	state,4,4
 	.comm	oldButtons,2,2
 	.comm	buttons,2,2
+	.comm	tens,4,4
+	.comm	ones,4,4
+	.comm	buttonTimer,4,4
+	.comm	seconds,4,4
+	.comm	sanity,4,4
+	.comm	sanityTimer,4,4
 	.comm	hOff,4,4
 	.comm	vOff,4,4
 	.comm	path,4,4
-	.comm	timer,4,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"

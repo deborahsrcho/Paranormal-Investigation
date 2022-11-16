@@ -30,6 +30,9 @@ KNOWN BUGS
 ADDITIONAL NOTES
 - the ghost attack will trigger after about 10 seconds, but for the purpose of demonstration,
 you may trigger one at any time by pressing *R*
+- the ghost attack will begin in the top left corner of the map 
+- if the player gets too close to the ghost, it will begin to chase the player, at which point the player will no longer
+be able to hide and must kill the ghost 
 - I have decided to combine the GHOST state described in M1 with the GAME state
 */
 #include "gba.h"
@@ -65,6 +68,7 @@ void initialize();
 
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
+int seed;
 
 int main() {
     initialize();
@@ -120,7 +124,9 @@ void goToStart() {
 }
 
 void start() {
+    seed++;
     if (BUTTON_PRESSED(BUTTON_START)) {
+        srand(seed);
         goToGame();
         initGame();
     }
@@ -151,9 +157,9 @@ void goToGame() {
     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
     DMANow(3, backgroundTiles, &CHARBLOCK[0], backgroundTilesLen / 2);
     DMANow(3, backgroundPal, PALETTE, backgroundPalLen / 2);
-    DMANow(3, backgroundMap, &SCREENBLOCK[31], 1024*2);
+    DMANow(3, backgroundMap, &SCREENBLOCK[20], 1024*2);
 
-    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_WIDE;
+    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(20) | BG_4BPP | BG_SIZE_WIDE;
 
     DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen/2);
     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen/2);
