@@ -4,6 +4,7 @@
 
 
 OBJ_ATTR shadowOAM[128];
+OCCURRENCE occurrences[OCCURRENCECOUNT];
 PLAYER player;
 WEAPON weapon;
 ENEMY ghost;
@@ -14,10 +15,13 @@ EQUIPMENT videocam;
 EQUIPMENT spiritbox;
 EQUIPMENT uvlight;
 GHOSTSPOT ghostspot;
+CAMERA camera;
 
 unsigned char* collisionMap = (unsigned char*) collisionmapBitmap; 
+int tempText;
 
 void initGame() {
+    tempText = 0;
     seconds = 0;
     sanity = 0;
     sanityTimer = 0;
@@ -29,6 +33,7 @@ void initGame() {
     initGhost();
     initghostSpot();
     initEquipment();
+    initOccurrences();
 }
 
 void updateGame() {
@@ -63,7 +68,7 @@ void interruptHandler() {
   }
   if (REG_IF & INT_TM1) {
     seconds++;
-    if (seconds % 5 == 0) {
+    if (thermometer.active && seconds % 15 == 0) {
         thermometer.randvar = rand() % 3;
         ghostbook.randvar = rand() % 5;
         videocam.randvar = rand() % 5;
@@ -118,12 +123,19 @@ void initPlayer() {
 }
 
 void initEquipment() {
+    camera.row = player.row;
+    camera.col = player.col;
+    camera.height = player.height + 8;
+    camera.width = player.width + 16;
+    camera.active = 0;
+    camera.equipped = 0;
+
     EMFReader.row = 0;
     EMFReader.col = 0;
     EMFReader.width = 16;
     EMFReader.height = 16;
     EMFReader.state = 0;
-    EMFReader.equipped = 0;
+    EMFReader.equipped = 1;
 
     thermometer.row = ghostspot.row;
     thermometer.col = ghostspot.col + 8;
@@ -186,7 +198,7 @@ void initGhost() {
     ghost.alert = 0;
     ghost.path = 0;
     ghost.route = 1;
-    ghost.type = JINN;
+    ghost.type =  rand() % 5;
 }
 
 void initghostSpot() {
@@ -196,9 +208,19 @@ void initghostSpot() {
     ghostspot.height = 64;
 }
 
+void initOccurrences() {
+    for (int i = 1; i < OCCURRENCECOUNT; i++) {
+        occurrences[i].col = 0;
+        occurrences[i].row = 0;
+        occurrences[i].width = 8;
+        occurrences[i].height = 8;
+        occurrences[i].caught = 0;
+    }
+}
+
 void updatePlayer() {
     // Button Input and Player Movement
-    if (!player.hidden && buttonTimer % 50 == 0) {
+    if (!player.hidden && buttonTimer % 50 == 0 && !tempText) {
         if(BUTTON_HELD(BUTTON_UP) && player.row > 1) {
             player.aniState = SPRITEBACK;
             player.row -= player.rdel;
@@ -228,7 +250,7 @@ void updatePlayer() {
 
     if (!ghost.alert && (!collisionCheck(collisionMap, MAPWIDTH, player.col, player.row) | !collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row)
     | !collisionCheck(collisionMap, MAPWIDTH, player.col, player.row + player.height-1) | !collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row + player.height-1))
-    && BUTTON_PRESSED(BUTTON_B)) {
+    && BUTTON_PRESSED(BUTTON_A)) {
         if (player.hidden == 0) {
             player.hidden = 1;
         } else {
@@ -236,26 +258,29 @@ void updatePlayer() {
         }
     } 
 
-    if (BUTTON_PRESSED(BUTTON_A)) {
+    if (BUTTON_PRESSED(BUTTON_R)) {
         player.equipped++;
         if (player.equipped >= 3) {
             player.equipped = 0;
         }
-        if (player.equipped == 1) {
+        if (player.equipped == 1) { // EMF Reader
             weapon.equipped = 0;
+            camera.equipped = 0;
             EMFReader.equipped = 1;
-        } else if (player.equipped == 2) {
-            EMFReader.equipped = 0;
-            weapon.equipped = 1;
-            shadowOAM[3].attr0 = ATTR0_HIDE;
-        } else if (player.equipped == 0) {
+        } else if (player.equipped == 2) { // Camera
             EMFReader.equipped = 0;
             weapon.equipped = 0;
+            camera.equipped = 1;
+            shadowOAM[3].attr0 = ATTR0_HIDE;
+        } else if (player.equipped == 0) { // Weapon
+            EMFReader.equipped = 0;
+            camera.equipped = 0;
+            weapon.equipped = 1;
             shadowOAM[3].attr0 = ATTR0_HIDE;
         }
     }
 
-    if (BUTTON_PRESSED(BUTTON_B) && !ghost.active && EMFReader.state >= 3 && thermometer.active == 0) {
+    if (BUTTON_PRESSED(BUTTON_A) && !ghost.active && EMFReader.state >= 3 && thermometer.active == 0) {
         thermometer.active = 1;
         thermometer.row = player.row - 8;
         thermometer.col = player.col - 10;
@@ -399,7 +424,7 @@ void drawWeapon() {
 }
 
 void updateGhost() {
-    if (!ghost.active && BUTTON_PRESSED(BUTTON_R)) {
+    if (!ghost.active && BUTTON_PRESSED(BUTTON_L)) {
         ghost.col = 0;
         ghost.row = 0;
         ghost.path = 0;
@@ -515,9 +540,26 @@ void updateThermometer() {
         }   
     }
 
-    if (player.equipped == 0 && BUTTON_PRESSED(BUTTON_B) 
+    if (BUTTON_PRESSED(BUTTON_A) 
     && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-        // show textbox
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (thermometer.temperature < 0) {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+        } else {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+        }
+    } else {
+        shadowOAM[13].attr0 = ATTR0_HIDE;
     }
 }
 
@@ -539,9 +581,26 @@ void updateGhostbook() {
         }
     }
 
-    if (player.equipped == 0 && BUTTON_PRESSED(BUTTON_B) 
+    if (BUTTON_PRESSED(BUTTON_A) 
     && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
-        // show textbox
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (ghostbook.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+        } else {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+        }
+    } else {
+        shadowOAM[13].attr0 = ATTR0_HIDE;
     }
 }
 
@@ -551,9 +610,26 @@ void updateVideoCam() {
             videocam.clue = 1;
         }
     }
-    if (player.equipped == 0 && BUTTON_PRESSED(BUTTON_B) 
+    if (BUTTON_PRESSED(BUTTON_A) 
     && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
-        // show textbox
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (videocam.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+        } else {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+        }
+    } else {
+        shadowOAM[13].attr0 = ATTR0_HIDE;
     }
 }
 
@@ -563,8 +639,25 @@ void updateSpiritBox() {
             spiritbox.clue = 1;
         }
     }
-    if (player.equipped == 0 && BUTTON_PRESSED(BUTTON_B) 
+    if (BUTTON_PRESSED(BUTTON_A) 
     && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-        // show textbox
+         if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (spiritbox.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+        } else {
+            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+        }
+    } else {
+        shadowOAM[13].attr0 = ATTR0_HIDE;
     }
 }

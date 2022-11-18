@@ -70,9 +70,24 @@ typedef struct {
 typedef struct {
     int row;
     int col;
+    int width;
+    int height;
+    int active;
+    int equipped;
+} CAMERA;
+typedef struct {
+    int row;
+    int col;
     int width; 
     int height;
 } GHOSTSPOT;
+typedef struct {
+    int row;
+    int col;
+    int height;
+    int width;
+    int caught;
+} OCCURRENCE;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
 enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
@@ -80,6 +95,7 @@ extern void goToLose();
 extern void goToWin();
 #define MAPWIDTH 512
 #define MAPHEIGHT 256
+#define OCCURRENCECOUNT 4
 
 extern PLAYER player;
 extern WEAPON weapon;
@@ -92,6 +108,8 @@ extern EQUIPMENT videocam;
 extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
+extern CAMERA camera;
+extern OCCURRENCE occurrences[OCCURRENCECOUNT];
 int path;
 int vOff;
 int hOff;
@@ -131,3 +149,9 @@ void updateUVLight();
 void updateGhostbook();
 void updateVideoCam();
 void updateSpiritBox();
+
+void initOccurrences();
+void updateOcurrences();
+void drawOccurrences();
+void updateCamera();
+void drawCamera();

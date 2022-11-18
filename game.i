@@ -77,12 +77,28 @@ typedef struct {
     int col;
     int width;
     int height;
+    int active;
+    int equipped;
+} CAMERA;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
 } GHOSTSPOT;
+typedef struct {
+    int row;
+    int col;
+    int height;
+    int width;
+    int caught;
+} OCCURRENCE;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
 enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
+
 
 
 
@@ -97,6 +113,8 @@ extern EQUIPMENT videocam;
 extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
+extern CAMERA camera;
+extern OCCURRENCE occurrences[4];
 int path;
 int vOff;
 int hOff;
@@ -136,6 +154,12 @@ void updateUVLight();
 void updateGhostbook();
 void updateVideoCam();
 void updateSpiritBox();
+
+void initOccurrences();
+void updateOcurrences();
+void drawOccurrences();
+void updateCamera();
+void drawCamera();
 # 2 "game.c" 2
 # 1 "gba.h" 1
 
@@ -246,6 +270,7 @@ extern const unsigned short collisionmapPal[256];
 
 
 OBJ_ATTR shadowOAM[128];
+OCCURRENCE occurrences[4];
 PLAYER player;
 WEAPON weapon;
 ENEMY ghost;
@@ -256,10 +281,13 @@ EQUIPMENT videocam;
 EQUIPMENT spiritbox;
 EQUIPMENT uvlight;
 GHOSTSPOT ghostspot;
+CAMERA camera;
 
 unsigned char* collisionMap = (unsigned char*) collisionmapBitmap;
+int tempText;
 
 void initGame() {
+    tempText = 0;
     seconds = 0;
     sanity = 0;
     sanityTimer = 0;
@@ -271,6 +299,7 @@ void initGame() {
     initGhost();
     initghostSpot();
     initEquipment();
+    initOccurrences();
 }
 
 void updateGame() {
@@ -305,7 +334,7 @@ void interruptHandler() {
   }
   if (*(volatile unsigned short*)0x4000202 & 1<<4) {
     seconds++;
-    if (seconds % 5 == 0) {
+    if (thermometer.active && seconds % 15 == 0) {
         thermometer.randvar = rand() % 3;
         ghostbook.randvar = rand() % 5;
         videocam.randvar = rand() % 5;
@@ -360,12 +389,19 @@ void initPlayer() {
 }
 
 void initEquipment() {
+    camera.row = player.row;
+    camera.col = player.col;
+    camera.height = player.height + 8;
+    camera.width = player.width + 16;
+    camera.active = 0;
+    camera.equipped = 0;
+
     EMFReader.row = 0;
     EMFReader.col = 0;
     EMFReader.width = 16;
     EMFReader.height = 16;
     EMFReader.state = 0;
-    EMFReader.equipped = 0;
+    EMFReader.equipped = 1;
 
     thermometer.row = ghostspot.row;
     thermometer.col = ghostspot.col + 8;
@@ -428,7 +464,7 @@ void initGhost() {
     ghost.alert = 0;
     ghost.path = 0;
     ghost.route = 1;
-    ghost.type = JINN;
+    ghost.type = rand() % 5;
 }
 
 void initghostSpot() {
@@ -438,9 +474,19 @@ void initghostSpot() {
     ghostspot.height = 64;
 }
 
+void initOccurrences() {
+    for (int i = 1; i < 4; i++) {
+        occurrences[i].col = 0;
+        occurrences[i].row = 0;
+        occurrences[i].width = 8;
+        occurrences[i].height = 8;
+        occurrences[i].caught = 0;
+    }
+}
+
 void updatePlayer() {
 
-    if (!player.hidden && buttonTimer % 50 == 0) {
+    if (!player.hidden && buttonTimer % 50 == 0 && !tempText) {
         if((~((*(volatile unsigned short *)0x04000130)) & ((1<<6))) && player.row > 1) {
             player.aniState = SPRITEBACK;
             player.row -= player.rdel;
@@ -470,7 +516,7 @@ void updatePlayer() {
 
     if (!ghost.alert && (!collisionCheck(collisionMap, 512, player.col, player.row) | !collisionCheck(collisionMap, 512, player.col + player.width-1, player.row)
     | !collisionCheck(collisionMap, 512, player.col, player.row + player.height-1) | !collisionCheck(collisionMap, 512, player.col + player.width-1, player.row + player.height-1))
-    && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))) {
+    && (!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))) {
         if (player.hidden == 0) {
             player.hidden = 1;
         } else {
@@ -478,26 +524,29 @@ void updatePlayer() {
         }
     }
 
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))) {
+    if ((!(~(oldButtons) & ((1<<8))) && (~buttons & ((1<<8))))) {
         player.equipped++;
         if (player.equipped >= 3) {
             player.equipped = 0;
         }
         if (player.equipped == 1) {
             weapon.equipped = 0;
+            camera.equipped = 0;
             EMFReader.equipped = 1;
         } else if (player.equipped == 2) {
             EMFReader.equipped = 0;
-            weapon.equipped = 1;
+            weapon.equipped = 0;
+            camera.equipped = 1;
             shadowOAM[3].attr0 = (2 << 8);
         } else if (player.equipped == 0) {
             EMFReader.equipped = 0;
-            weapon.equipped = 0;
+            camera.equipped = 0;
+            weapon.equipped = 1;
             shadowOAM[3].attr0 = (2 << 8);
         }
     }
 
-    if ((!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1)))) && !ghost.active && EMFReader.state >= 3 && thermometer.active == 0) {
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0)))) && !ghost.active && EMFReader.state >= 3 && thermometer.active == 0) {
         thermometer.active = 1;
         thermometer.row = player.row - 8;
         thermometer.col = player.col - 10;
@@ -641,7 +690,7 @@ void drawWeapon() {
 }
 
 void updateGhost() {
-    if (!ghost.active && (!(~(oldButtons) & ((1<<8))) && (~buttons & ((1<<8))))) {
+    if (!ghost.active && (!(~(oldButtons) & ((1<<9))) && (~buttons & ((1<<9))))) {
         ghost.col = 0;
         ghost.row = 0;
         ghost.path = 0;
@@ -757,9 +806,26 @@ void updateThermometer() {
         }
     }
 
-    if (player.equipped == 0 && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
     && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (thermometer.temperature < 0) {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+        } else {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+        }
+    } else {
+        shadowOAM[13].attr0 = (2 << 8);
     }
 }
 
@@ -781,9 +847,26 @@ void updateGhostbook() {
         }
     }
 
-    if (player.equipped == 0 && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
     && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
-
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (ghostbook.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+        } else {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+        }
+    } else {
+        shadowOAM[13].attr0 = (2 << 8);
     }
 }
 
@@ -793,9 +876,26 @@ void updateVideoCam() {
             videocam.clue = 1;
         }
     }
-    if (player.equipped == 0 && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
     && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
-
+        if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (videocam.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+        } else {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+        }
+    } else {
+        shadowOAM[13].attr0 = (2 << 8);
     }
 }
 
@@ -805,8 +905,25 @@ void updateSpiritBox() {
             spiritbox.clue = 1;
         }
     }
-    if (player.equipped == 0 && (!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
     && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-
+         if (tempText == 0) {
+            tempText = 1;
+        } else {
+            tempText = 0;
+        }
+    }
+    if (tempText == 1) {
+        if (spiritbox.clue == 1) {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+        } else {
+            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+        }
+    } else {
+        shadowOAM[13].attr0 = (2 << 8);
     }
 }
