@@ -214,7 +214,7 @@ goToGame:
 	ldr	r1, .L27+16
 	mov	lr, pc
 	bx	r4
-	mov	r2, #21504
+	mov	r2, #24064
 	mov	r3, #256
 	strh	r2, [r5, #8]	@ movhi
 	mov	r0, #3
@@ -242,7 +242,7 @@ goToGame:
 	.word	DMANow
 	.word	backgroundTiles
 	.word	backgroundPal
-	.word	100704256
+	.word	100724736
 	.word	backgroundMap
 	.word	83886592
 	.word	spritesheetPal
@@ -316,78 +316,67 @@ goToManual:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, r5, r6, lr}
-	ldr	r5, .L45
+	mov	r2, #67108864
+	mov	r3, #4608
+	ldr	r1, .L45
+	push	{r4, lr}
+	mov	r0, #3
 	ldr	r4, .L45+4
-	mov	lr, pc
-	bx	r5
+	strh	r3, [r2]	@ movhi
+	strh	r1, [r2, #10]	@ movhi
+	mov	r3, #3840
+	ldr	r2, .L45+8
+	ldr	r1, .L45+12
 	mov	lr, pc
 	bx	r4
-	mov	r2, #67108864
-	ldr	r1, .L45+8
-	mov	r3, #512
-	strh	r1, [r2]	@ movhi
-	mov	r0, #3
+	mov	r3, #256
 	mov	r2, #83886080
-	ldr	r1, .L45+12
-	ldr	r6, .L45+16
+	mov	r0, #3
+	ldr	r1, .L45+16
 	mov	lr, pc
-	bx	r6
-	ldr	r0, .L45+20
-	ldr	r3, .L45+24
-	mov	lr, pc
-	bx	r3
-	mov	lr, pc
-	bx	r5
+	bx	r4
+	mov	r0, #3
+	ldr	r2, .L45+20
+	ldr	r1, .L45+24
+	mov	r3, #1024
 	mov	lr, pc
 	bx	r4
 	ldr	r3, .L45+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #3
 	ldr	r3, .L45+32
-	pop	{r4, r5, r6, lr}
+	mov	lr, pc
+	bx	r3
+	mov	r2, #117440512
+	mov	r3, #512
+	mov	r0, #3
+	ldr	r1, .L45+36
+	mov	lr, pc
+	bx	r4
+	ldr	r3, .L45+40
+	mov	lr, pc
+	bx	r3
+	mov	r2, #3
+	ldr	r3, .L45+44
+	pop	{r4, lr}
 	str	r2, [r3]
 	bx	lr
 .L46:
 	.align	2
 .L45:
-	.word	waitForVBlank
-	.word	flipPage
-	.word	1044
-	.word	startBgPal
+	.word	5128
 	.word	DMANow
-	.word	manualBgBitmap
-	.word	drawFullscreenImage4
+	.word	100696064
+	.word	manualBgTiles
+	.word	manualBgPal
+	.word	100704256
+	.word	manualBgMap
+	.word	waitForVBlank
 	.word	hideSprites
+	.word	shadowOAM
+	.word	initCursor
 	.word	state
 	.size	goToManual, .-goToManual
-	.align	2
-	.global	manual
-	.syntax unified
-	.arm
-	.fpu softvfp
-	.type	manual, %function
-manual:
-	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 0
-	@ frame_needed = 0, uses_anonymous_args = 0
-	@ link register save eliminated.
-	ldr	r3, .L52
-	ldrh	r3, [r3]
-	tst	r3, #8
-	bxeq	lr
-	ldr	r3, .L52+4
-	ldrh	r3, [r3]
-	tst	r3, #8
-	bxne	lr
-	b	goToGame
-.L53:
-	.align	2
-.L52:
-	.word	oldButtons
-	.word	buttons
-	.size	manual, .-manual
 	.align	2
 	.global	goToPause
 	.syntax unified
@@ -399,41 +388,41 @@ goToPause:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r5, .L56
-	ldr	r4, .L56+4
+	ldr	r5, .L49
+	ldr	r4, .L49+4
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
 	mov	r2, #67108864
-	ldr	r1, .L56+8
+	ldr	r1, .L49+8
 	mov	r3, #512
 	strh	r1, [r2]	@ movhi
 	mov	r0, #3
 	mov	r2, #83886080
-	ldr	r1, .L56+12
-	ldr	r6, .L56+16
+	ldr	r1, .L49+12
+	ldr	r6, .L49+16
 	mov	lr, pc
 	bx	r6
-	ldr	r0, .L56+20
-	ldr	r3, .L56+24
+	ldr	r0, .L49+20
+	ldr	r3, .L49+24
 	mov	lr, pc
 	bx	r3
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L56+28
+	ldr	r3, .L49+28
 	mov	lr, pc
 	bx	r3
 	mov	r2, #4
-	ldr	r3, .L56+32
+	ldr	r3, .L49+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
-.L57:
+.L50:
 	.align	2
-.L56:
+.L49:
 	.word	waitForVBlank
 	.word	flipPage
 	.word	1044
@@ -455,40 +444,40 @@ game:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
-	ldr	r3, .L70
-	ldr	r4, .L70+4
+	ldr	r3, .L63
+	ldr	r4, .L63+4
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L70+8
+	ldr	r3, .L63+8
 	mov	lr, pc
 	bx	r3
 	ldrh	r3, [r4]
 	tst	r3, #4
-	beq	.L59
-	ldr	r2, .L70+12
+	beq	.L52
+	ldr	r2, .L63+12
 	ldrh	r2, [r2]
 	tst	r2, #4
-	beq	.L68
-.L59:
+	beq	.L61
+.L52:
 	tst	r3, #8
-	beq	.L58
-	ldr	r3, .L70+12
+	beq	.L51
+	ldr	r3, .L63+12
 	ldrh	r3, [r3]
 	tst	r3, #8
-	beq	.L69
-.L58:
+	beq	.L62
+.L51:
 	pop	{r4, lr}
 	bx	lr
-.L69:
+.L62:
 	pop	{r4, lr}
 	b	goToManual
-.L68:
+.L61:
 	bl	goToPause
 	ldrh	r3, [r4]
-	b	.L59
-.L71:
+	b	.L52
+.L64:
 	.align	2
-.L70:
+.L63:
 	.word	updateGame
 	.word	oldButtons
 	.word	drawGame
@@ -505,41 +494,41 @@ pause:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
-	ldr	r4, .L84
+	ldr	r4, .L77
 	ldrh	r3, [r4]
 	tst	r3, #4
-	beq	.L73
-	ldr	r2, .L84+4
+	beq	.L66
+	ldr	r2, .L77+4
 	ldrh	r2, [r2]
 	tst	r2, #4
-	beq	.L82
-.L73:
+	beq	.L75
+.L66:
 	tst	r3, #256
-	beq	.L72
-	ldr	r3, .L84+4
+	beq	.L65
+	ldr	r3, .L77+4
 	ldrh	r3, [r3]
 	tst	r3, #256
-	beq	.L83
-.L72:
+	beq	.L76
+.L65:
 	pop	{r4, lr}
 	bx	lr
-.L83:
+.L76:
 	bl	goToStart
-	ldr	r3, .L84+8
+	ldr	r3, .L77+8
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L84+12
+	ldr	r3, .L77+12
 	mov	lr, pc
 	bx	r3
 	pop	{r4, lr}
 	bx	lr
-.L82:
+.L75:
 	bl	goToGame
 	ldrh	r3, [r4]
-	b	.L73
-.L85:
+	b	.L66
+.L78:
 	.align	2
-.L84:
+.L77:
 	.word	oldButtons
 	.word	buttons
 	.word	waitForVBlank
@@ -556,41 +545,41 @@ goToWin:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r5, .L88
-	ldr	r4, .L88+4
+	ldr	r5, .L81
+	ldr	r4, .L81+4
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
 	mov	r2, #67108864
-	ldr	r1, .L88+8
+	ldr	r1, .L81+8
 	mov	r3, #512
 	strh	r1, [r2]	@ movhi
 	mov	r0, #3
 	mov	r2, #83886080
-	ldr	r1, .L88+12
-	ldr	r6, .L88+16
+	ldr	r1, .L81+12
+	ldr	r6, .L81+16
 	mov	lr, pc
 	bx	r6
-	ldr	r0, .L88+20
-	ldr	r3, .L88+24
+	ldr	r0, .L81+20
+	ldr	r3, .L81+24
 	mov	lr, pc
 	bx	r3
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L88+28
+	ldr	r3, .L81+28
 	mov	lr, pc
 	bx	r3
 	mov	r2, #5
-	ldr	r3, .L88+32
+	ldr	r3, .L81+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
-.L89:
+.L82:
 	.align	2
-.L88:
+.L81:
 	.word	waitForVBlank
 	.word	flipPage
 	.word	1044
@@ -602,6 +591,73 @@ goToWin:
 	.word	state
 	.size	goToWin, .-goToWin
 	.align	2
+	.global	manual
+	.syntax unified
+	.arm
+	.fpu softvfp
+	.type	manual, %function
+manual:
+	@ Function supports interworking.
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	push	{r4, lr}
+	ldr	r3, .L95
+	ldr	r4, .L95+4
+	mov	lr, pc
+	bx	r3
+	ldr	r3, .L95+8
+	mov	lr, pc
+	bx	r3
+	ldrh	r3, [r4]
+	tst	r3, #8
+	beq	.L84
+	ldr	r2, .L95+12
+	ldrh	r2, [r2]
+	tst	r2, #8
+	beq	.L93
+.L84:
+	tst	r3, #1
+	beq	.L83
+	ldr	r3, .L95+12
+	ldrh	r3, [r3]
+	tst	r3, #1
+	bne	.L83
+	ldr	r2, .L95+16
+	ldr	r3, .L95+20
+	ldr	r2, [r2, #8]
+	ldr	r3, [r3, #56]
+	cmp	r2, r3
+	beq	.L94
+.L83:
+	pop	{r4, lr}
+	bx	lr
+.L93:
+	mov	r2, #512
+	ldr	r3, .L95+24
+	strh	r2, [r3, #136]	@ movhi
+	bl	goToGame
+	ldrh	r3, [r4]
+	b	.L84
+.L94:
+	ldr	r2, .L95+28
+	ldr	r3, [r2]
+	pop	{r4, lr}
+	add	r3, r3, #500
+	str	r3, [r2]
+	b	goToWin
+.L96:
+	.align	2
+.L95:
+	.word	drawManual
+	.word	oldButtons
+	.word	updateCursor
+	.word	buttons
+	.word	cursor
+	.word	ghost
+	.word	shadowOAM
+	.word	score
+	.size	manual, .-manual
+	.align	2
 	.global	goToLose
 	.syntax unified
 	.arm
@@ -612,41 +668,41 @@ goToLose:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r5, .L92
-	ldr	r4, .L92+4
+	ldr	r5, .L99
+	ldr	r4, .L99+4
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
 	mov	r2, #67108864
-	ldr	r1, .L92+8
+	ldr	r1, .L99+8
 	mov	r3, #512
 	strh	r1, [r2]	@ movhi
 	mov	r0, #3
 	mov	r2, #83886080
-	ldr	r1, .L92+12
-	ldr	r6, .L92+16
+	ldr	r1, .L99+12
+	ldr	r6, .L99+16
 	mov	lr, pc
 	bx	r6
-	ldr	r0, .L92+20
-	ldr	r3, .L92+24
+	ldr	r0, .L99+20
+	ldr	r3, .L99+24
 	mov	lr, pc
 	bx	r3
 	mov	lr, pc
 	bx	r5
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L92+28
+	ldr	r3, .L99+28
 	mov	lr, pc
 	bx	r3
 	mov	r2, #6
-	ldr	r3, .L92+32
+	ldr	r3, .L99+32
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
-.L93:
+.L100:
 	.align	2
-.L92:
+.L99:
 	.word	waitForVBlank
 	.word	flipPage
 	.word	1044
@@ -667,27 +723,27 @@ lose:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	ldr	r3, .L103
+	ldr	r3, .L110
 	ldrh	r3, [r3]
 	tst	r3, #8
 	bxeq	lr
-	ldr	r3, .L103+4
+	ldr	r3, .L110+4
 	ldrh	r3, [r3]
 	tst	r3, #8
 	bxne	lr
 	push	{r4, lr}
 	bl	goToStart
-	ldr	r3, .L103+8
+	ldr	r3, .L110+8
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L103+12
+	ldr	r3, .L110+12
 	mov	lr, pc
 	bx	r3
 	pop	{r4, lr}
 	bx	lr
-.L104:
+.L111:
 	.align	2
-.L103:
+.L110:
 	.word	oldButtons
 	.word	buttons
 	.word	waitForVBlank
@@ -705,87 +761,68 @@ main:
 	@ Volatile: function does not return.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	ldr	r6, .L121
-	ldr	r8, .L121+4
 	push	{r4, r7, fp, lr}
-	ldr	r3, .L121+8
+	ldr	r3, .L125
 	mov	lr, pc
 	bx	r3
-	ldr	r5, .L121+12
+	ldr	r6, .L125+4
+	ldr	r8, .L125+8
+	ldr	r5, .L125+12
+	ldr	fp, .L125+16
+	ldr	r10, .L125+20
+	ldr	r9, .L125+24
+	ldr	r7, .L125+28
+	ldr	r4, .L125+32
+.L113:
 	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	ldr	fp, .L121+16
-	ldr	r10, .L121+20
-	ldr	r9, .L121+24
-	ldr	r7, .L121+28
-	ldr	r4, .L121+32
-.L107:
-	strh	r0, [r5]	@ movhi
+	ldrh	r3, [r8]
+.L114:
+	strh	r3, [r5]	@ movhi
 	ldrh	r3, [r4, #48]
 	strh	r3, [r8]	@ movhi
 	cmp	r2, #6
 	ldrls	pc, [pc, r2, asl #2]
-	b	.L116
-.L109:
-	.word	.L114
-	.word	.L113
-	.word	.L112
-	.word	.L111
-	.word	.L110
-	.word	.L108
-	.word	.L108
-.L108:
+	b	.L114
+.L116:
+	.word	.L121
+	.word	.L120
+	.word	.L119
+	.word	.L118
+	.word	.L117
+	.word	.L115
+	.word	.L115
+.L115:
 	mov	lr, pc
 	bx	r7
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L110:
-	ldr	r3, .L121+36
+	b	.L113
+.L117:
+	ldr	r3, .L125+36
 	mov	lr, pc
 	bx	r3
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L111:
-	tst	r0, #8
-	beq	.L116
-	tst	r3, #8
-	beq	.L120
-.L116:
-	mov	r0, r3
-	b	.L107
-.L112:
+	b	.L113
+.L118:
+	ldr	r3, .L125+40
+	mov	lr, pc
+	bx	r3
+	b	.L113
+.L119:
 	mov	lr, pc
 	bx	r9
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L114:
-	mov	lr, pc
-	bx	fp
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L113:
+	b	.L113
+.L120:
 	mov	lr, pc
 	bx	r10
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L120:
-	ldr	r3, .L121+40
-	mov	lr, pc
-	bx	r3
-	ldr	r2, [r6]
-	ldrh	r0, [r8]
-	b	.L107
-.L122:
-	.align	2
+	b	.L113
 .L121:
+	mov	lr, pc
+	bx	fp
+	b	.L113
+.L126:
+	.align	2
+.L125:
+	.word	initialize
 	.word	state
 	.word	buttons
-	.word	initialize
 	.word	oldButtons
 	.word	start
 	.word	instructions
@@ -793,7 +830,7 @@ main:
 	.word	lose
 	.word	67109120
 	.word	pause
-	.word	goToGame
+	.word	manual
 	.size	main, .-main
 	.text
 	.align	2
@@ -815,6 +852,7 @@ win:
 	.comm	buttons,2,2
 	.comm	tens,4,4
 	.comm	ones,4,4
+	.comm	score,4,4
 	.comm	buttonTimer,4,4
 	.comm	seconds,4,4
 	.comm	sanity,4,4

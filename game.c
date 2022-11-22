@@ -1,5 +1,6 @@
 #include "game.h"
 #include "gba.h"
+#include "print.h"
 #include "collisionmap.h"
 
 
@@ -21,6 +22,7 @@ unsigned char* collisionMap = (unsigned char*) collisionmapBitmap;
 int tempText;
 
 void initGame() {
+    // mgba_open();
     tempText = 0;
     seconds = 0;
     sanity = 0;
@@ -28,6 +30,7 @@ void initGame() {
     buttonTimer = 0;
     hOff = 0;
     vOff = 0;
+    score = 0;
     setupInterrupts();
     initPlayer();
     initGhost();
@@ -47,6 +50,7 @@ void updateGame() {
     updateGhostbook();
     updateVideoCam();
     updateSpiritBox();
+    updateCamera();
     REG_BG0HOFF = hOff;
     REG_BG0VOFF = vOff;
     DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
@@ -57,8 +61,10 @@ void drawGame() {
     drawWeapon();
     drawGhost();
     drawEMFReader();
+    drawCamera();
     drawEquipment();
     drawSanity();
+    drawOccurrences(); 
 }
 
 void interruptHandler() {
@@ -68,11 +74,14 @@ void interruptHandler() {
   }
   if (REG_IF & INT_TM1) {
     seconds++;
-    if (thermometer.active && seconds % 15 == 0) {
-        thermometer.randvar = rand() % 3;
-        ghostbook.randvar = rand() % 5;
-        videocam.randvar = rand() % 5;
-        spiritbox.randvar = rand() % 5;
+    if (thermometer.active && seconds % 3 == 0) {
+        thermometer.randvar = rand() % 2;
+        //mgba_printf("temperature: (%d)", thermometer.temperature);
+    }
+    if (thermometer.active && seconds % 10 == 0) {
+        ghostbook.randvar = rand() % 3;
+        videocam.randvar = rand() % 3;
+        spiritbox.randvar = rand() % 3;
     }
   }
   REG_IF = REG_IF;  
@@ -128,6 +137,8 @@ void initEquipment() {
     camera.height = player.height + 8;
     camera.width = player.width + 16;
     camera.active = 0;
+    camera.timer = 0;
+    camera.state = player.aniState;
     camera.equipped = 0;
 
     EMFReader.row = 0;
@@ -198,7 +209,7 @@ void initGhost() {
     ghost.alert = 0;
     ghost.path = 0;
     ghost.route = 1;
-    ghost.type =  rand() % 5;
+    ghost.type =  rand() % 6;
 }
 
 void initghostSpot() {
@@ -209,12 +220,32 @@ void initghostSpot() {
 }
 
 void initOccurrences() {
-    for (int i = 1; i < OCCURRENCECOUNT; i++) {
-        occurrences[i].col = 0;
-        occurrences[i].row = 0;
+    for (int i = 0; i < OCCURRENCECOUNT; i++) {
         occurrences[i].width = 8;
         occurrences[i].height = 8;
         occurrences[i].caught = 0;
+    }
+    occurrences[0].col = 10;
+    occurrences[0].row = 200;
+    occurrences[1].col = 300;
+    occurrences[1].row = 240;
+    occurrences[2].col = 100;
+    occurrences[2].row = 10;
+    occurrences[3].col = 500;
+    occurrences[3].row = 150;
+}
+
+void drawOccurrences() {
+    for (int i = 0; i < OCCURRENCECOUNT; i++) {
+        if (occurrences[i].caught) {
+            shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & COLMASK) | ATTR1_TINY;
+            shadowOAM[18 + i].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(6, 8);
+        } else {
+            shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & COLMASK) | ATTR1_TINY;
+            shadowOAM[18 + i].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(8, 8);
+        }
     }
 }
 
@@ -407,9 +438,7 @@ void updateWeapon() {
         if (weapon.active 
         && collision(weapon.col, weapon.row, weapon.width, weapon.height, ghost.col, ghost.row, ghost.width, ghost.height)) {
             ghost.active = 0;
-            goToWin();
         }
-        
 
         weapon.timer++;
     }
@@ -420,6 +449,62 @@ void drawWeapon() {
         shadowOAM[1].attr1 = ((weapon.col - hOff) & COLMASK) | ATTR1_MEDIUM;
         shadowOAM[1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(weapon.state*4, 2);
         shadowOAM[3].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(10, 8); // TEMP
+    }
+}
+
+void updateCamera() {
+    if (camera.equipped) {
+        if (BUTTON_PRESSED(BUTTON_B)){
+            //camera.active = 1;
+            camera.state = player.aniState;
+            camera.timer = 0;
+        } 
+        if (camera.timer < 200) {
+            camera.state = player.aniState;
+            camera.active = 1;
+        } else {
+            camera.active = 0; 
+            camera.state = 4;
+        }
+
+        // camera State
+        if (camera.state == SPRITEFRONT) {
+            camera.width = 48;
+            camera.height = 32;
+            camera.col = player.col - 16;
+            camera.row = player.row + player.height;
+        } else if (camera.state == SPRITEBACK) {
+            camera.width = 48;
+            camera.height = 32;
+            camera.col = player.col - 16;
+            camera.row = player.row - camera.height;
+        } else if (camera.state == SPRITERIGHT) {
+            camera.width = 32;
+            camera.height = 48;
+            camera.col = player.col + player.width;
+            camera.row = player.row - 16;
+        } else if (camera.state == SPRITELEFT) {
+            camera.col = player.col - camera.width;
+            camera.row = player.row - 16;
+            camera.width = 32;
+            camera.height = 48;
+        }
+
+        for (int i = 0; i < OCCURRENCECOUNT; i++) {
+            if (camera.active 
+            && collision(camera.col, camera.row, camera.width, camera.height, occurrences[i].col, occurrences[i].row, occurrences[i].width, occurrences[i].height)) {
+                occurrences[i].caught = 1;
+            }
+        }
+        camera.timer++;
+    }
+}
+
+void drawCamera() {
+    if (camera.equipped) {
+        shadowOAM[3].attr0 = ((10) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+        shadowOAM[3].attr1 = ((10) & COLMASK) | ATTR1_TINY;
+        shadowOAM[3].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(2, 10);
     }
 }
 
@@ -532,40 +617,43 @@ void drawSanity() {
 }
 
 void updateThermometer() {
-    if (thermometer.randvar == 3) {
+    if (thermometer.randvar == 1) {
         if (thermometer.temperature > 0 && ((ghost.type == DEMON) | (ghost.type == ONI) | (ghost.type == WRAITH))) {
             thermometer.temperature -= 3;
         } else if (thermometer.temperature > 5) {
             thermometer.temperature -= 3;
         }   
     }
-
-    if (BUTTON_PRESSED(BUTTON_A) 
-    && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-        if (tempText == 0) {
-            tempText = 1;
+    if (thermometer.active) {
+        if (BUTTON_PRESSED(BUTTON_A) 
+        && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
+            if (thermometer.temperature <= 0) {
+                shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+            } else {
+                shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+            }
         } else {
-            tempText = 0;
+            shadowOAM[13].attr0 = ATTR0_HIDE;
         }
     }
-    if (tempText == 1) {
-        if (thermometer.temperature < 0) {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
-        } else {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
-        }
-    } else {
-        shadowOAM[13].attr0 = ATTR0_HIDE;
-    }
+   
 }
 
 void updateUVLight() {
     if (uvlight.active) {
-        if (ghost.type == DEMON | ghost.type == JINN | ghost.type == POLTERGEIST) {
+        if ((ghost.type == DEMON) | (ghost.type == JINN) | (ghost.type == POLTERGEIST)) {
             uvlight.clue = 1;
             shadowOAM[12].attr0 = ((uvlight.row + 10 - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
             shadowOAM[12].attr1 = ((uvlight.col + 10 - hOff) & COLMASK) | ATTR1_TINY;
@@ -575,89 +663,100 @@ void updateUVLight() {
 }
 
 void updateGhostbook() {
-    if (ghostbook.randvar == 3) {
-        if (ghost.type == DEMON | ghost.type == BANSHEE | ghost.type == POLTERGEIST) {
+    if (ghostbook.randvar == 1) {
+        if ((ghost.type == DEMON) | (ghost.type == BANSHEE)| (ghost.type == POLTERGEIST)) {
             ghostbook.clue = 1;
         }
     }
-
-    if (BUTTON_PRESSED(BUTTON_A) 
-    && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
-        if (tempText == 0) {
-            tempText = 1;
+    if (ghostbook.active) {
+        if (BUTTON_PRESSED(BUTTON_A) 
+        && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
+            if (ghostbook.clue == 1) {
+                shadowOAM[14].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[14].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[14].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+            } else {
+                shadowOAM[14].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[14].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[14].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+            }
         } else {
-            tempText = 0;
+            shadowOAM[14].attr0 = ATTR0_HIDE;
         }
     }
-    if (tempText == 1) {
-        if (ghostbook.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
-        } else {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
-        }
-    } else {
-        shadowOAM[13].attr0 = ATTR0_HIDE;
-    }
+    
 }
 
 void updateVideoCam() {
-    if (videocam.randvar == 3) {
-        if (ghost.type == ONI | ghost.type == BANSHEE | ghost.type == WRAITH) {
+    if (videocam.randvar == 1) {
+        if ((ghost.type == POLTERGEIST) | (ghost.type == BANSHEE) | (ghost.type == WRAITH)) {
             videocam.clue = 1;
         }
     }
-    if (BUTTON_PRESSED(BUTTON_A) 
-    && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
-        if (tempText == 0) {
-            tempText = 1;
+    if (videocam.active) {
+        if (BUTTON_PRESSED(BUTTON_A) 
+        && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
+            if (videocam.clue == 1) {
+                shadowOAM[15].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[15].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[15].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+            } else {
+                shadowOAM[15].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[15].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[15].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+            }
         } else {
-            tempText = 0;
+            shadowOAM[15].attr0 = ATTR0_HIDE;
         }
     }
-    if (tempText == 1) {
-        if (videocam.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
-        } else {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
-        }
-    } else {
-        shadowOAM[13].attr0 = ATTR0_HIDE;
-    }
+    
 }
 
 void updateSpiritBox() {
-    if (spiritbox.randvar == 3) {
-        if (ghost.type == JINN | ghost.type == BANSHEE | ghost.type == POLTERGEIST) {
+    if (spiritbox.randvar == 1) {
+        if ((ghost.type == JINN) | (ghost.type == BANSHEE) | (ghost.type == ONI)) {
             spiritbox.clue = 1;
         }
     }
-    if (BUTTON_PRESSED(BUTTON_A) 
-    && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-         if (tempText == 0) {
-            tempText = 1;
+    if (spiritbox.active) {
+        if (BUTTON_PRESSED(BUTTON_A) 
+        && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
+            if (spiritbox.clue == 1) {
+                shadowOAM[16].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[16].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[16].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
+            } else {
+                shadowOAM[16].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[16].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[16].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
+            }
         } else {
-            tempText = 0;
+            shadowOAM[16].attr0 = ATTR0_HIDE;
         }
     }
-    if (tempText == 1) {
-        if (spiritbox.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
-        } else {
-            shadowOAM[13].attr0 = ((140) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[13].attr1 = ((20) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[13].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 12);
-        }
-    } else {
-        shadowOAM[13].attr0 = ATTR0_HIDE;
-    }
+    
 }

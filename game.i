@@ -79,6 +79,8 @@ typedef struct {
     int height;
     int active;
     int equipped;
+    int state;
+    int timer;
 } CAMERA;
 typedef struct {
     int row;
@@ -122,6 +124,7 @@ int sanityTimer;
 int sanity;
 int seconds;
 int buttonTimer;
+int score;
 
 int ones;
 int tens;
@@ -260,13 +263,220 @@ typedef struct {
 # 312 "gba.h"
 typedef void (*ihp)(void);
 # 3 "game.c" 2
+# 1 "print.h" 1
+# 26 "print.h"
+# 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
+# 9 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 3 4
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 1 3 4
+# 12 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 3 4
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 1 3 4
+
+
+
+
+
+
+
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/features.h" 1 3 4
+# 28 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/features.h" 3 4
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_newlib_version.h" 1 3 4
+# 29 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/features.h" 2 3 4
+# 9 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 2 3 4
+# 41 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+
+# 41 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef signed char __int8_t;
+
+typedef unsigned char __uint8_t;
+# 55 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef short int __int16_t;
+
+typedef short unsigned int __uint16_t;
+# 77 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef long int __int32_t;
+
+typedef long unsigned int __uint32_t;
+# 103 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef long long int __int64_t;
+
+typedef long long unsigned int __uint64_t;
+# 134 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef signed char __int_least8_t;
+
+typedef unsigned char __uint_least8_t;
+# 160 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef short int __int_least16_t;
+
+typedef short unsigned int __uint_least16_t;
+# 182 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef long int __int_least32_t;
+
+typedef long unsigned int __uint_least32_t;
+# 200 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef long long int __int_least64_t;
+
+typedef long long unsigned int __uint_least64_t;
+# 214 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_default_types.h" 3 4
+typedef long long int __intmax_t;
+
+
+
+
+
+
+
+typedef long long unsigned int __uintmax_t;
+
+
+
+
+
+
+
+typedef int __intptr_t;
+
+typedef unsigned int __uintptr_t;
+# 13 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 2 3 4
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_intsup.h" 1 3 4
+# 35 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_intsup.h" 3 4
+       
+       
+       
+       
+       
+       
+       
+# 187 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_intsup.h" 3 4
+       
+       
+       
+       
+       
+       
+       
+# 14 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 2 3 4
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_stdint.h" 1 3 4
+# 20 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_stdint.h" 3 4
+typedef __int8_t int8_t ;
+
+
+
+typedef __uint8_t uint8_t ;
+
+
+
+
+
+
+
+typedef __int16_t int16_t ;
+
+
+
+typedef __uint16_t uint16_t ;
+
+
+
+
+
+
+
+typedef __int32_t int32_t ;
+
+
+
+typedef __uint32_t uint32_t ;
+
+
+
+
+
+
+
+typedef __int64_t int64_t ;
+
+
+
+typedef __uint64_t uint64_t ;
+
+
+
+
+
+
+typedef __intmax_t intmax_t;
+
+
+
+
+typedef __uintmax_t uintmax_t;
+
+
+
+
+typedef __intptr_t intptr_t;
+
+
+
+
+typedef __uintptr_t uintptr_t;
+# 15 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 2 3 4
+
+
+
+
+
+
+typedef __int_least8_t int_least8_t;
+typedef __uint_least8_t uint_least8_t;
+
+
+
+
+typedef __int_least16_t int_least16_t;
+typedef __uint_least16_t uint_least16_t;
+
+
+
+
+typedef __int_least32_t int_least32_t;
+typedef __uint_least32_t uint_least32_t;
+
+
+
+
+typedef __int_least64_t int_least64_t;
+typedef __uint_least64_t uint_least64_t;
+# 51 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 3 4
+  typedef int int_fast8_t;
+  typedef unsigned int uint_fast8_t;
+# 61 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 3 4
+  typedef int int_fast16_t;
+  typedef unsigned int uint_fast16_t;
+# 71 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 3 4
+  typedef int int_fast32_t;
+  typedef unsigned int uint_fast32_t;
+# 81 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdint.h" 3 4
+  typedef long long int int_fast64_t;
+  typedef long long unsigned int uint_fast64_t;
+# 10 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 2 3 4
+# 27 "print.h" 2
+# 36 "print.h"
+
+# 36 "print.h"
+void mgba_printf_level(int level, const char* ptr, ...);
+void mgba_printf(const char* string, ...);
+void mgba_break(void);
+uint8_t mgba_open(void);
+void mgba_close(void);
+# 4 "game.c" 2
 # 1 "collisionmap.h" 1
 # 21 "collisionmap.h"
 extern const unsigned short collisionmapBitmap[65536];
 
 
 extern const unsigned short collisionmapPal[256];
-# 4 "game.c" 2
+# 5 "game.c" 2
 
 
 OBJ_ATTR shadowOAM[128];
@@ -287,6 +497,7 @@ unsigned char* collisionMap = (unsigned char*) collisionmapBitmap;
 int tempText;
 
 void initGame() {
+
     tempText = 0;
     seconds = 0;
     sanity = 0;
@@ -294,6 +505,7 @@ void initGame() {
     buttonTimer = 0;
     hOff = 0;
     vOff = 0;
+    score = 0;
     setupInterrupts();
     initPlayer();
     initGhost();
@@ -313,6 +525,7 @@ void updateGame() {
     updateGhostbook();
     updateVideoCam();
     updateSpiritBox();
+    updateCamera();
     (*(volatile unsigned short *)0x04000010) = hOff;
     (*(volatile unsigned short *)0x04000012) = vOff;
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
@@ -323,8 +536,10 @@ void drawGame() {
     drawWeapon();
     drawGhost();
     drawEMFReader();
+    drawCamera();
     drawEquipment();
     drawSanity();
+    drawOccurrences();
 }
 
 void interruptHandler() {
@@ -334,11 +549,14 @@ void interruptHandler() {
   }
   if (*(volatile unsigned short*)0x4000202 & 1<<4) {
     seconds++;
-    if (thermometer.active && seconds % 15 == 0) {
-        thermometer.randvar = rand() % 3;
-        ghostbook.randvar = rand() % 5;
-        videocam.randvar = rand() % 5;
-        spiritbox.randvar = rand() % 5;
+    if (thermometer.active && seconds % 3 == 0) {
+        thermometer.randvar = rand() % 2;
+
+    }
+    if (thermometer.active && seconds % 10 == 0) {
+        ghostbook.randvar = rand() % 3;
+        videocam.randvar = rand() % 3;
+        spiritbox.randvar = rand() % 3;
     }
   }
   *(volatile unsigned short*)0x4000202 = *(volatile unsigned short*)0x4000202;
@@ -394,6 +612,8 @@ void initEquipment() {
     camera.height = player.height + 8;
     camera.width = player.width + 16;
     camera.active = 0;
+    camera.timer = 0;
+    camera.state = player.aniState;
     camera.equipped = 0;
 
     EMFReader.row = 0;
@@ -464,7 +684,7 @@ void initGhost() {
     ghost.alert = 0;
     ghost.path = 0;
     ghost.route = 1;
-    ghost.type = rand() % 5;
+    ghost.type = rand() % 6;
 }
 
 void initghostSpot() {
@@ -475,12 +695,32 @@ void initghostSpot() {
 }
 
 void initOccurrences() {
-    for (int i = 1; i < 4; i++) {
-        occurrences[i].col = 0;
-        occurrences[i].row = 0;
+    for (int i = 0; i < 4; i++) {
         occurrences[i].width = 8;
         occurrences[i].height = 8;
         occurrences[i].caught = 0;
+    }
+    occurrences[0].col = 10;
+    occurrences[0].row = 200;
+    occurrences[1].col = 300;
+    occurrences[1].row = 240;
+    occurrences[2].col = 100;
+    occurrences[2].row = 10;
+    occurrences[3].col = 500;
+    occurrences[3].row = 150;
+}
+
+void drawOccurrences() {
+    for (int i = 0; i < 4; i++) {
+        if (occurrences[i].caught) {
+            shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[18 + i].attr2 = ((0)<<12) | ((8)*32+(6));
+        } else {
+            shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[18 + i].attr2 = ((0)<<12) | ((8)*32+(8));
+        }
     }
 }
 
@@ -673,9 +913,7 @@ void updateWeapon() {
         if (weapon.active
         && collision(weapon.col, weapon.row, weapon.width, weapon.height, ghost.col, ghost.row, ghost.width, ghost.height)) {
             ghost.active = 0;
-            goToWin();
         }
-
 
         weapon.timer++;
     }
@@ -686,6 +924,62 @@ void drawWeapon() {
         shadowOAM[1].attr1 = ((weapon.col - hOff) & 0x1FF) | (2 << 14);
         shadowOAM[1].attr2 = ((0)<<12) | ((2)*32+(weapon.state*4));
         shadowOAM[3].attr2 = ((0)<<12) | ((8)*32+(10));
+    }
+}
+
+void updateCamera() {
+    if (camera.equipped) {
+        if ((!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))){
+
+            camera.state = player.aniState;
+            camera.timer = 0;
+        }
+        if (camera.timer < 200) {
+            camera.state = player.aniState;
+            camera.active = 1;
+        } else {
+            camera.active = 0;
+            camera.state = 4;
+        }
+
+
+        if (camera.state == SPRITEFRONT) {
+            camera.width = 48;
+            camera.height = 32;
+            camera.col = player.col - 16;
+            camera.row = player.row + player.height;
+        } else if (camera.state == SPRITEBACK) {
+            camera.width = 48;
+            camera.height = 32;
+            camera.col = player.col - 16;
+            camera.row = player.row - camera.height;
+        } else if (camera.state == SPRITERIGHT) {
+            camera.width = 32;
+            camera.height = 48;
+            camera.col = player.col + player.width;
+            camera.row = player.row - 16;
+        } else if (camera.state == SPRITELEFT) {
+            camera.col = player.col - camera.width;
+            camera.row = player.row - 16;
+            camera.width = 32;
+            camera.height = 48;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            if (camera.active
+            && collision(camera.col, camera.row, camera.width, camera.height, occurrences[i].col, occurrences[i].row, occurrences[i].width, occurrences[i].height)) {
+                occurrences[i].caught = 1;
+            }
+        }
+        camera.timer++;
+    }
+}
+
+void drawCamera() {
+    if (camera.equipped) {
+        shadowOAM[3].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[3].attr1 = ((10) & 0x1FF) | (0 << 14);
+        shadowOAM[3].attr2 = ((0)<<12) | ((10)*32+(2));
     }
 }
 
@@ -798,40 +1092,43 @@ void drawSanity() {
 }
 
 void updateThermometer() {
-    if (thermometer.randvar == 3) {
+    if (thermometer.randvar == 1) {
         if (thermometer.temperature > 0 && ((ghost.type == DEMON) | (ghost.type == ONI) | (ghost.type == WRAITH))) {
             thermometer.temperature -= 3;
         } else if (thermometer.temperature > 5) {
             thermometer.temperature -= 3;
         }
     }
+    if (thermometer.active) {
+        if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
+        && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
+            if (thermometer.temperature <= 0) {
+                shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+            } else {
+                shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+            }
+        } else {
+            shadowOAM[13].attr0 = (2 << 8);
+        }
+    }
 
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
-    && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-        if (tempText == 0) {
-            tempText = 1;
-        } else {
-            tempText = 0;
-        }
-    }
-    if (tempText == 1) {
-        if (thermometer.temperature < 0) {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
-        } else {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
-        }
-    } else {
-        shadowOAM[13].attr0 = (2 << 8);
-    }
 }
 
 void updateUVLight() {
     if (uvlight.active) {
-        if (ghost.type == DEMON | ghost.type == JINN | ghost.type == POLTERGEIST) {
+        if ((ghost.type == DEMON) | (ghost.type == JINN) | (ghost.type == POLTERGEIST)) {
             uvlight.clue = 1;
             shadowOAM[12].attr0 = ((uvlight.row + 10 - vOff) & 0xFF) | (0 << 13) | (0 << 14);
             shadowOAM[12].attr1 = ((uvlight.col + 10 - hOff) & 0x1FF) | (0 << 14);
@@ -841,89 +1138,100 @@ void updateUVLight() {
 }
 
 void updateGhostbook() {
-    if (ghostbook.randvar == 3) {
-        if (ghost.type == DEMON | ghost.type == BANSHEE | ghost.type == POLTERGEIST) {
+    if (ghostbook.randvar == 1) {
+        if ((ghost.type == DEMON) | (ghost.type == BANSHEE)| (ghost.type == POLTERGEIST)) {
             ghostbook.clue = 1;
         }
     }
+    if (ghostbook.active) {
+        if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
+        && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
+            if (ghostbook.clue == 1) {
+                shadowOAM[14].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[14].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[14].attr2 = ((0)<<12) | ((12)*32+(0));
+            } else {
+                shadowOAM[14].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[14].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[14].attr2 = ((0)<<12) | ((12)*32+(4));
+            }
+        } else {
+            shadowOAM[14].attr0 = (2 << 8);
+        }
+    }
 
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
-    && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
-        if (tempText == 0) {
-            tempText = 1;
-        } else {
-            tempText = 0;
-        }
-    }
-    if (tempText == 1) {
-        if (ghostbook.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
-        } else {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
-        }
-    } else {
-        shadowOAM[13].attr0 = (2 << 8);
-    }
 }
 
 void updateVideoCam() {
-    if (videocam.randvar == 3) {
-        if (ghost.type == ONI | ghost.type == BANSHEE | ghost.type == WRAITH) {
+    if (videocam.randvar == 1) {
+        if ((ghost.type == POLTERGEIST) | (ghost.type == BANSHEE) | (ghost.type == WRAITH)) {
             videocam.clue = 1;
         }
     }
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
-    && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
-        if (tempText == 0) {
-            tempText = 1;
+    if (videocam.active) {
+        if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
+        && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
+            if (videocam.clue == 1) {
+                shadowOAM[15].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[15].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[15].attr2 = ((0)<<12) | ((12)*32+(0));
+            } else {
+                shadowOAM[15].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[15].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[15].attr2 = ((0)<<12) | ((12)*32+(4));
+            }
         } else {
-            tempText = 0;
+            shadowOAM[15].attr0 = (2 << 8);
         }
     }
-    if (tempText == 1) {
-        if (videocam.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
-        } else {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
-        }
-    } else {
-        shadowOAM[13].attr0 = (2 << 8);
-    }
+
 }
 
 void updateSpiritBox() {
-    if (spiritbox.randvar == 3) {
-        if (ghost.type == JINN | ghost.type == BANSHEE | ghost.type == POLTERGEIST) {
+    if (spiritbox.randvar == 1) {
+        if ((ghost.type == JINN) | (ghost.type == BANSHEE) | (ghost.type == ONI)) {
             spiritbox.clue = 1;
         }
     }
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
-    && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-         if (tempText == 0) {
-            tempText = 1;
+    if (spiritbox.active) {
+        if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
+        && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
+            if (tempText == 0) {
+                tempText = 1;
+            } else {
+                tempText = 0;
+            }
+        }
+        if (tempText == 1
+        && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
+            if (spiritbox.clue == 1) {
+                shadowOAM[16].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[16].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[16].attr2 = ((0)<<12) | ((12)*32+(0));
+            } else {
+                shadowOAM[16].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[16].attr1 = ((20) & 0x1FF) | (2 << 14);
+                shadowOAM[16].attr2 = ((0)<<12) | ((12)*32+(4));
+            }
         } else {
-            tempText = 0;
+            shadowOAM[16].attr0 = (2 << 8);
         }
     }
-    if (tempText == 1) {
-        if (spiritbox.clue == 1) {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
-        } else {
-            shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-            shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
-        }
-    } else {
-        shadowOAM[13].attr0 = (2 << 8);
-    }
+
 }

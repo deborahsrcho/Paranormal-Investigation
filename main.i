@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
-# 38 "main.c"
+# 40 "main.c"
 # 1 "gba.h" 1
 
 
@@ -101,7 +101,7 @@ typedef struct {
 } ANISPRITE;
 # 312 "gba.h"
 typedef void (*ihp)(void);
-# 39 "main.c" 2
+# 41 "main.c" 2
 # 1 "print.h" 1
 # 26 "print.h"
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
@@ -308,7 +308,7 @@ void mgba_printf(const char* string, ...);
 void mgba_break(void);
 uint8_t mgba_open(void);
 void mgba_close(void);
-# 40 "main.c" 2
+# 42 "main.c" 2
 # 1 "game.h" 1
 typedef struct {
     int row;
@@ -322,6 +322,7 @@ typedef struct {
     int curFrame;
     int numFrames;
     int hidden;
+    int equipped;
 } PLAYER;
 typedef struct {
     int row;
@@ -366,6 +367,7 @@ typedef struct {
     int active;
     int state;
     int randvar;
+    int clue;
 } EQUIPMENT;
 typedef struct {
     int row;
@@ -382,12 +384,30 @@ typedef struct {
     int col;
     int width;
     int height;
+    int active;
+    int equipped;
+    int state;
+    int timer;
+} CAMERA;
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
 } GHOSTSPOT;
+typedef struct {
+    int row;
+    int col;
+    int height;
+    int width;
+    int caught;
+} OCCURRENCE;
 
 enum { SPRITEFRONT, SPRITEBACK, SPRITERIGHT, SPRITELEFT};
 enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
+
 
 
 
@@ -402,6 +422,8 @@ extern EQUIPMENT videocam;
 extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
+extern CAMERA camera;
+extern OCCURRENCE occurrences[4];
 int path;
 int vOff;
 int hOff;
@@ -409,6 +431,7 @@ int sanityTimer;
 int sanity;
 int seconds;
 int buttonTimer;
+int score;
 
 int ones;
 int tens;
@@ -437,56 +460,69 @@ void interruptHandler();
 void enableTimerInterrupts();
 void setupInterrupts();
 void updateThermometer();
-# 41 "main.c" 2
+void updateUVLight();
+void updateGhostbook();
+void updateVideoCam();
+void updateSpiritBox();
+
+void initOccurrences();
+void updateOcurrences();
+void drawOccurrences();
+void updateCamera();
+void drawCamera();
+# 43 "main.c" 2
 # 1 "startBg.h" 1
 # 21 "startBg.h"
 extern const unsigned short startBgBitmap[19200];
 
 
 extern const unsigned short startBgPal[256];
-# 42 "main.c" 2
+# 44 "main.c" 2
 # 1 "instructionsBg.h" 1
 # 21 "instructionsBg.h"
 extern const unsigned short instructionsBgBitmap[19200];
 
 
 extern const unsigned short instructionsBgPal[256];
-# 43 "main.c" 2
+# 45 "main.c" 2
 # 1 "manualBg.h" 1
-# 21 "manualBg.h"
-extern const unsigned short manualBgBitmap[19200];
+# 22 "manualBg.h"
+extern const unsigned short manualBgTiles[3840];
+
+
+extern const unsigned short manualBgMap[1024];
 
 
 extern const unsigned short manualBgPal[256];
-# 44 "main.c" 2
+# 46 "main.c" 2
 # 1 "pauseBg.h" 1
 # 21 "pauseBg.h"
 extern const unsigned short pauseBgBitmap[19200];
 
 
 extern const unsigned short pauseBgPal[256];
-# 45 "main.c" 2
+# 47 "main.c" 2
 # 1 "winBg.h" 1
 # 21 "winBg.h"
 extern const unsigned short winBgBitmap[19200];
 
 
 extern const unsigned short winBgPal[256];
-# 46 "main.c" 2
+# 48 "main.c" 2
 # 1 "loseBg.h" 1
 # 21 "loseBg.h"
 extern const unsigned short loseBgBitmap[19200];
 
 
 extern const unsigned short loseBgPal[256];
-# 47 "main.c" 2
+# 49 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 48 "main.c" 2
+# 50 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[32];
@@ -496,7 +532,21 @@ extern const unsigned short backgroundMap[2048];
 
 
 extern const unsigned short backgroundPal[256];
-# 49 "main.c" 2
+# 51 "main.c" 2
+# 1 "manual.h" 1
+typedef struct {
+    int row;
+    int col;
+    int type;
+} CURSOR;
+
+extern CURSOR cursor;
+extern OBJ_ATTR shadowOAM[128];
+
+void initCursor();
+void drawManual();
+void updateCursor();
+# 52 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -520,13 +570,13 @@ void initialize();
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
 int seed;
+extern OBJ_ATTR shadowOAM[128];
 
 int main() {
     initialize();
     while (1) {
         oldButtons = buttons;
         buttons = (*(volatile unsigned short *)0x04000130);
-
         switch(state) {
             case START:
                 start();
@@ -608,9 +658,9 @@ void goToGame() {
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
     DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 64 / 2);
     DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[20], 1024*2);
+    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[30], 1024*2);
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((20)<<8) | (0<<7) | (1<<14);
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((30)<<8) | (0<<7) | (1<<14);
 
     DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);
@@ -631,22 +681,35 @@ void game() {
 }
 
 void goToManual() {
+
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9) | (1<<12);
+    (*(volatile unsigned short*)0x400000A) = ((2)<<2) | ((20)<<8) | (0<<7) | (0<<14);
+    DMANow(3, manualBgTiles, &((charblock *)0x6000000)[2], 7680 / 2);
+    DMANow(3, manualBgPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, manualBgMap, &((screenblock *)0x6000000)[20], 1024);
+
     waitForVBlank();
-    flipPage();
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(manualBgBitmap);
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
+
+    initCursor();
     state = MANUAL;
 }
 
 void manual() {
+    drawManual();
+    updateCursor();
+
     if((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
+        shadowOAM[17].attr0 = (2 << 8);
         goToGame();
     }
-
+    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))) {
+        if (cursor.type == ghost.type) {
+            score += 500;
+            goToWin();
+        }
+    }
 }
 
 void goToPause() {

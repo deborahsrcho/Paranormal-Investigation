@@ -74,6 +74,8 @@ typedef struct {
     int height;
     int active;
     int equipped;
+    int state;
+    int timer;
 } CAMERA;
 typedef struct {
     int row;
@@ -117,6 +119,7 @@ int sanityTimer;
 int sanity;
 int seconds;
 int buttonTimer;
+int score;
 
 int ones;
 int tens;
@@ -154,4 +157,4 @@ void initOccurrences();
 void updateOcurrences();
 void drawOccurrences();
 void updateCamera();
-void drawCamera();
+void drawCamera(); 
