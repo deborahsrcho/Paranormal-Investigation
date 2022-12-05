@@ -11,6 +11,7 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
+    int idle;
     int aniState;
     int curFrame;
     int numFrames;
@@ -61,6 +62,7 @@ typedef struct {
     int state;
     int randvar;
     int clue;
+    int checking;
 } EQUIPMENT;
 typedef struct {
     int row;
@@ -71,6 +73,7 @@ typedef struct {
     int state;
     int randvar;
     int temperature;
+    int checking;
 } THERMOMETER;
 typedef struct {
     int row;
@@ -116,7 +119,8 @@ extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
-extern OCCURRENCE occurrences[4];
+extern OCCURRENCE occurrences[5];
+extern int screenBlock;
 int path;
 int vOff;
 int hOff;
@@ -125,9 +129,6 @@ int sanity;
 int seconds;
 int buttonTimer;
 int score;
-
-int ones;
-int tens;
 
 void initGame();
 void updateGame();

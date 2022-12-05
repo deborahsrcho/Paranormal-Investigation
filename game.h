@@ -6,6 +6,7 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
+    int idle;
     int aniState;
     int curFrame;
     int numFrames;
@@ -56,6 +57,7 @@ typedef struct {
     int state;
     int randvar;
     int clue;
+    int checking;
 } EQUIPMENT;
 typedef struct {
     int row;
@@ -66,6 +68,7 @@ typedef struct {
     int state;
     int randvar;
     int temperature;
+    int checking;
 }  THERMOMETER;
 typedef struct {
     int row;
@@ -96,8 +99,9 @@ enum { DEMON, JINN, ONI, POLTERGEIST, BANSHEE, WRAITH };
 extern void goToLose();
 extern void goToWin();
 #define MAPWIDTH 512
-#define MAPHEIGHT 256
-#define OCCURRENCECOUNT 4
+#define MAPHEIGHT 576
+#define OCCURRENCECOUNT 5
+#define SANITYMAX 100
 
 extern PLAYER player;
 extern WEAPON weapon;
@@ -112,6 +116,7 @@ extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
 extern OCCURRENCE occurrences[OCCURRENCECOUNT];
+extern int screenBlock;
 int path;
 int vOff;
 int hOff;
@@ -120,9 +125,7 @@ int sanity;
 int seconds;
 int buttonTimer;
 int score;
-
-int ones;
-int tens;
+int occurrencesCaught;
 
 void initGame();
 void updateGame();
@@ -154,7 +157,6 @@ void updateVideoCam();
 void updateSpiritBox();
 
 void initOccurrences();
-void updateOcurrences();
 void drawOccurrences();
 void updateCamera();
 void drawCamera(); 

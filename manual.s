@@ -171,8 +171,6 @@ updateCursor:
 	.word	262
 	.size	updateCursor, .-updateCursor
 	.comm	cursor,12,4
-	.comm	tens,4,4
-	.comm	ones,4,4
 	.comm	score,4,4
 	.comm	buttonTimer,4,4
 	.comm	seconds,4,4

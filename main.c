@@ -49,6 +49,9 @@ you may trigger one at any time by pressing *L*
 #include "spritesheet.h"
 #include "background.h"
 #include "manual.h"
+#include "sound.h"
+#include "losesound.h"
+#include "startmusic.h"
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -67,11 +70,13 @@ void game();
 void pause();
 void lose();
 void win();
+void initStart();
 void initialize();
 
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
 int seed;
+int screenBlock;
 extern OBJ_ATTR shadowOAM[128];
 
 int main() {
@@ -106,22 +111,33 @@ int main() {
 }
 
 void initialize() {
-
     REG_DISPCTL = MODE4 | BG2_ENABLE | DISP_BACKBUFFER;
     
     oldButtons = buttons;
     buttons = BUTTONS;
 
+    screenBlock = 26;
     hideSprites();
+    initStart();
     goToStart();
+    
+    setupSounds();
+}
+
+void initStart() {
+    playSoundA(((signed char*) startmusic_data), startmusic_length, 1);
 }
 
 void goToStart() {
-    REG_DISPCTL = MODE4 | BG2_ENABLE | DISP_BACKBUFFER;
-    DMANow(3, startBgPal, PALETTE, startBgPalLen);
-    drawFullscreenImage4(startBgBitmap); 
+    REG_DISPCTL = MODE0 | BG1_ENABLE;
+    REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
+    DMANow(3, startBgTiles, &CHARBLOCK[0], startBgTilesLen / 2);
+    DMANow(3, startBgPal, PALETTE, startBgPalLen / 2);
+    DMANow(3, startBgMap, &SCREENBLOCK[31], 1024);
+    
     waitForVBlank();
-    flipPage();
+    hideSprites();
+    DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
     
     state = START;
 }
@@ -160,12 +176,12 @@ void goToGame() {
     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
     DMANow(3, backgroundTiles, &CHARBLOCK[0], backgroundTilesLen / 2);
     DMANow(3, backgroundPal, PALETTE, backgroundPalLen / 2);
-    DMANow(3, backgroundMap, &SCREENBLOCK[30], 1024*2);
+    DMANow(3, backgroundMap, &SCREENBLOCK[26], backgroundMapLen/2);
 
-    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(30) | BG_4BPP | BG_SIZE_WIDE;
+    REG_BG0CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(26) | BG_8BPP | BG_SIZE_LARGE;
 
-    DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen/2);
     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen/2);
+    DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen/2);
 
     waitForVBlank();
     state = GAME;
@@ -185,10 +201,10 @@ void game() {
 void goToManual() {
     
     REG_DISPCTL = MODE0 | BG1_ENABLE | SPRITE_ENABLE;
-    REG_BG1CNT = BG_CHARBLOCK(2) | BG_SCREENBLOCK(20) | BG_4BPP | BG_SIZE_SMALL;
-    DMANow(3, manualBgTiles, &CHARBLOCK[2], manualBgTilesLen / 2);
+    REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
+    DMANow(3, manualBgTiles, &CHARBLOCK[0], manualBgTilesLen / 2);
     DMANow(3, manualBgPal, PALETTE, manualBgPalLen / 2);
-    DMANow(3, manualBgMap, &SCREENBLOCK[20], 1024);
+    DMANow(3, manualBgMap, &SCREENBLOCK[31], 1024);
     
     waitForVBlank();
     hideSprites();
@@ -215,22 +231,26 @@ void manual() {
 }
 
 void goToPause() {
+    pauseSound();
+    REG_DISPCTL = MODE0 | BG1_ENABLE;
+    REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
+    DMANow(3, pauseBgTiles, &CHARBLOCK[0], pauseBgTilesLen / 2);
+    DMANow(3, pauseBgPal, PALETTE, pauseBgPalLen / 2);
+    DMANow(3, pauseBgMap, &SCREENBLOCK[31], 1024);
+    
     waitForVBlank();
-    flipPage();
-    REG_DISPCTL = MODE4 | BG2_ENABLE | DISP_BACKBUFFER;
-    DMANow(3, startBgPal, PALETTE, startBgPalLen);
-    drawFullscreenImage4(pauseBgBitmap); 
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
     state = PAUSE;
 }
 
 void pause() {
     if(BUTTON_PRESSED(BUTTON_SELECT)) {
+        unpauseSound();
         goToGame();
     }
     if(BUTTON_PRESSED(BUTTON_R)) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();
@@ -251,6 +271,7 @@ void goToWin() {
 
 void win() {
     if (BUTTON_PRESSED(BUTTON_START)) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();
@@ -258,19 +279,22 @@ void win() {
 }
 
 void goToLose() {
+    REG_DISPCTL = MODE0 | BG1_ENABLE;
+    REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
+    DMANow(3, loseBgTiles, &CHARBLOCK[0], loseBgTilesLen / 2);
+    DMANow(3, loseBgPal, PALETTE, loseBgPalLen / 2);
+    DMANow(3, loseBgMap, &SCREENBLOCK[31], 1024);
+    
     waitForVBlank();
-    flipPage();
-    REG_DISPCTL = MODE4 | BG2_ENABLE | DISP_BACKBUFFER;
-    DMANow(3, startBgPal, PALETTE, startBgPalLen);
-    drawFullscreenImage4(loseBgBitmap); 
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    playSoundA(((signed char*) losesound_data), losesound_length, 0);
+    DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
     state = LOSE;
 }
 
 void lose() {
     if (BUTTON_PRESSED(BUTTON_START)) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();

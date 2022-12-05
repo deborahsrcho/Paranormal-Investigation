@@ -11,6 +11,7 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
+    int idle;
     int aniState;
     int curFrame;
     int numFrames;
@@ -61,6 +62,7 @@ typedef struct {
     int state;
     int randvar;
     int clue;
+    int checking;
 } EQUIPMENT;
 typedef struct {
     int row;
@@ -71,6 +73,7 @@ typedef struct {
     int state;
     int randvar;
     int temperature;
+    int checking;
 } THERMOMETER;
 typedef struct {
     int row;
@@ -104,6 +107,7 @@ extern void goToWin();
 
 
 
+
 extern PLAYER player;
 extern WEAPON weapon;
 extern ENEMY ghost;
@@ -116,7 +120,8 @@ extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
-extern OCCURRENCE occurrences[4];
+extern OCCURRENCE occurrences[5];
+extern int screenBlock;
 int path;
 int vOff;
 int hOff;
@@ -125,9 +130,7 @@ int sanity;
 int seconds;
 int buttonTimer;
 int score;
-
-int ones;
-int tens;
+int occurrencesCaught;
 
 void initGame();
 void updateGame();
@@ -159,7 +162,6 @@ void updateVideoCam();
 void updateSpiritBox();
 
 void initOccurrences();
-void updateOcurrences();
 void drawOccurrences();
 void updateCamera();
 void drawCamera();
@@ -472,15 +474,709 @@ void mgba_close(void);
 # 4 "game.c" 2
 # 1 "collisionmap.h" 1
 # 21 "collisionmap.h"
-extern const unsigned short collisionmapBitmap[65536];
+extern const unsigned short collisionmapBitmap[147456];
 
 
 extern const unsigned short collisionmapPal[256];
 # 5 "game.c" 2
+# 1 "sound.h" 1
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void setupInterrupts();
+void interruptHandler();
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+# 49 "sound.h"
+typedef struct{
+    const signed char* data;
+    int length;
+    int frequency;
+    int isPlaying;
+    int loops;
+    int duration;
+    int priority;
+    int vBlankCount;
+} SOUND;
+
+SOUND soundA;
+SOUND soundB;
+# 6 "game.c" 2
+# 1 "gamemusic.h" 1
 
 
+extern const unsigned int gamemusic_sampleRate;
+extern const unsigned int gamemusic_length;
+extern const signed char gamemusic_data[];
+# 7 "game.c" 2
+# 1 "ghostmusic.h" 1
+
+
+extern const unsigned int ghostmusic_sampleRate;
+extern const unsigned int ghostmusic_length;
+extern const signed char ghostmusic_data[];
+# 8 "game.c" 2
+# 1 "gunsound.h" 1
+
+
+extern const unsigned int gunsound_sampleRate;
+extern const unsigned int gunsound_length;
+extern const signed char gunsound_data[];
+# 9 "game.c" 2
+# 1 "camerasound.h" 1
+
+
+extern const unsigned int camerasound_sampleRate;
+extern const unsigned int camerasound_length;
+extern const signed char camerasound_data[];
+# 10 "game.c" 2
+# 1 "staticsound.h" 1
+
+
+extern const unsigned int staticsound_sampleRate;
+extern const unsigned int staticsound_length;
+extern const signed char staticsound_data[];
+# 11 "game.c" 2
+# 1 "spiritboxsound.h" 1
+
+
+extern const unsigned int spiritboxsound_sampleRate;
+extern const unsigned int spiritboxsound_length;
+extern const signed char spiritboxsound_data[];
+# 12 "game.c" 2
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 1 3
+# 10 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/ieeefp.h" 1 3
+# 11 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_ansi.h" 1 3
+# 10 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_ansi.h" 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/newlib.h" 1 3
+# 11 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_ansi.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/config.h" 1 3
+
+
+
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/ieeefp.h" 1 3
+# 5 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/config.h" 2 3
+# 12 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_ansi.h" 2 3
+# 12 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+
+
+
+
+# 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
+# 209 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 3 4
+
+# 209 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 3 4
+typedef unsigned int size_t;
+# 321 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 3 4
+typedef unsigned int wchar_t;
+# 17 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 1 3
+# 13 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/_ansi.h" 1 3
+# 14 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
+# 143 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 3 4
+typedef int ptrdiff_t;
+# 15 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 1 3
+# 24 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/_types.h" 1 3
+
+
+
+
+
+
+typedef __int64_t _off_t;
+
+
+typedef __int64_t _fpos_t;
+
+
+typedef __uint32_t __ino_t;
+
+
+typedef __uint32_t __dev_t;
+# 25 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/lock.h" 1 3
+
+
+
+
+
+
+typedef int32_t _LOCK_T;
+
+struct __lock_t {
+ _LOCK_T lock;
+ uint32_t thread_tag;
+ uint32_t counter;
+};
+
+typedef struct __lock_t _LOCK_RECURSIVE_T;
+
+extern void __libc_lock_init(_LOCK_T *lock);
+extern void __libc_lock_init_recursive(_LOCK_RECURSIVE_T *lock);
+extern void __libc_lock_close(_LOCK_T *lock);
+extern void __libc_lock_close_recursive(_LOCK_RECURSIVE_T *lock);
+extern void __libc_lock_acquire(_LOCK_T *lock);
+extern void __libc_lock_acquire_recursive(_LOCK_RECURSIVE_T *lock);
+extern void __libc_lock_release(_LOCK_T *lock);
+extern void __libc_lock_release_recursive(_LOCK_RECURSIVE_T *lock);
+
+
+extern int __libc_lock_try_acquire(_LOCK_T *lock);
+extern int __libc_lock_try_acquire_recursive(_LOCK_RECURSIVE_T *lock);
+# 26 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 2 3
+
+
+typedef long __blkcnt_t;
+
+
+
+typedef long __blksize_t;
+
+
+
+typedef __uint64_t __fsblkcnt_t;
+
+
+
+typedef __uint32_t __fsfilcnt_t;
+# 50 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+typedef int __pid_t;
+
+
+
+
+
+
+
+typedef unsigned short __uid_t;
+
+
+typedef unsigned short __gid_t;
+
+
+
+typedef __uint32_t __id_t;
+# 88 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+typedef __uint32_t __mode_t;
+
+
+
+
+
+__extension__ typedef long long _off64_t;
+
+
+
+
+
+typedef _off_t __off_t;
+
+
+typedef _off64_t __loff_t;
+
+
+typedef long __key_t;
+# 129 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+typedef unsigned int __size_t;
+# 145 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+typedef signed int _ssize_t;
+# 156 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 3
+typedef _ssize_t __ssize_t;
+
+
+# 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
+# 350 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 3 4
+typedef unsigned int wint_t;
+# 160 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/_types.h" 2 3
+
+
+
+typedef struct
+{
+  int __count;
+  union
+  {
+    wint_t __wch;
+    unsigned char __wchb[4];
+  } __value;
+} _mbstate_t;
+
+
+
+typedef _LOCK_RECURSIVE_T _flock_t;
+
+
+
+
+typedef void *_iconv_t;
+
+
+
+
+
+
+typedef unsigned long __clock_t;
+
+
+
+
+
+
+typedef __int_least64_t __time_t;
+
+
+
+
+
+typedef unsigned long __clockid_t;
+
+
+typedef unsigned long __timer_t;
+
+
+typedef __uint8_t __sa_family_t;
+
+
+
+typedef __uint32_t __socklen_t;
+
+
+typedef int __nl_item;
+typedef unsigned short __nlink_t;
+typedef long __suseconds_t;
+typedef unsigned long __useconds_t;
+
+
+
+
+typedef char * __va_list;
+# 16 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 2 3
+
+
+
+
+
+
+typedef unsigned long __ULong;
+# 38 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct _reent;
+
+struct __locale_t;
+
+
+
+
+
+
+struct _Bigint
+{
+  struct _Bigint *_next;
+  int _k, _maxwds, _sign, _wds;
+  __ULong _x[1];
+};
+
+
+struct __tm
+{
+  int __tm_sec;
+  int __tm_min;
+  int __tm_hour;
+  int __tm_mday;
+  int __tm_mon;
+  int __tm_year;
+  int __tm_wday;
+  int __tm_yday;
+  int __tm_isdst;
+};
+
+
+
+
+
+
+
+struct _on_exit_args {
+ void * _fnargs[32];
+ void * _dso_handle[32];
+
+ __ULong _fntypes;
+
+
+ __ULong _is_cxa;
+};
+# 93 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct _atexit {
+ struct _atexit *_next;
+ int _ind;
+
+ void (*_fns[32])(void);
+        struct _on_exit_args _on_exit_args;
+};
+# 117 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct __sbuf {
+ unsigned char *_base;
+ int _size;
+};
+# 181 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct __sFILE {
+  unsigned char *_p;
+  int _r;
+  int _w;
+  short _flags;
+  short _file;
+  struct __sbuf _bf;
+  int _lbfsize;
+
+
+
+
+
+
+  void * _cookie;
+
+  int (*_read) (struct _reent *, void *,
+        char *, int);
+  int (*_write) (struct _reent *, void *,
+         const char *,
+         int);
+  _fpos_t (*_seek) (struct _reent *, void *, _fpos_t, int);
+  int (*_close) (struct _reent *, void *);
+
+
+  struct __sbuf _ub;
+  unsigned char *_up;
+  int _ur;
+
+
+  unsigned char _ubuf[3];
+  unsigned char _nbuf[1];
+
+
+  struct __sbuf _lb;
+
+
+  int _blksize;
+  _off_t _offset;
+
+
+  struct _reent *_data;
+
+
+
+  _flock_t _lock;
+
+  _mbstate_t _mbstate;
+  int _flags2;
+};
+# 287 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+typedef struct __sFILE __FILE;
+
+
+
+struct _glue
+{
+  struct _glue *_next;
+  int _niobs;
+  __FILE *_iobs;
+};
+# 319 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct _rand48 {
+  unsigned short _seed[3];
+  unsigned short _mult[3];
+  unsigned short _add;
+
+
+
+
+};
+# 610 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+struct _reent
+{
+  int _errno;
+
+
+
+
+  __FILE *_stdin, *_stdout, *_stderr;
+
+  int _inc;
+  char _emergency[25];
+
+
+  int _unspecified_locale_info;
+  struct __locale_t *_locale;
+
+  int __sdidinit;
+
+  void (*__cleanup) (struct _reent *);
+
+
+  struct _Bigint *_result;
+  int _result_k;
+  struct _Bigint *_p5s;
+  struct _Bigint **_freelist;
+
+
+  int _cvtlen;
+  char *_cvtbuf;
+
+  union
+    {
+      struct
+        {
+          unsigned int _unused_rand;
+          char * _strtok_last;
+          char _asctime_buf[26];
+          struct __tm _localtime_buf;
+          int _gamma_signgam;
+          __extension__ unsigned long long _rand_next;
+          struct _rand48 _r48;
+          _mbstate_t _mblen_state;
+          _mbstate_t _mbtowc_state;
+          _mbstate_t _wctomb_state;
+          char _l64a_buf[8];
+          char _signal_buf[24];
+          int _getdate_err;
+          _mbstate_t _mbrlen_state;
+          _mbstate_t _mbrtowc_state;
+          _mbstate_t _mbsrtowcs_state;
+          _mbstate_t _wcrtomb_state;
+          _mbstate_t _wcsrtombs_state;
+   int _h_errno;
+        } _reent;
+
+
+
+      struct
+        {
+
+          unsigned char * _nextf[30];
+          unsigned int _nmalloc[30];
+        } _unused;
+    } _new;
+
+
+
+  struct _atexit *_atexit;
+  struct _atexit _atexit0;
+
+
+
+  void (**(_sig_func))(int);
+
+
+
+
+  struct _glue __sglue;
+
+  __FILE __sf[3];
+
+  void *deviceData;
+};
+# 817 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/reent.h" 3
+extern struct _reent *_impure_ptr ;
+extern struct _reent *const _global_impure_ptr ;
+
+void _reclaim_reent (struct _reent *);
+
+
+
+
+
+  struct _reent * __getreent (void);
+# 19 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/cdefs.h" 1 3
+# 47 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/cdefs.h" 3
+# 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
+# 48 "/opt/devkitpro/devkitARM/arm-none-eabi/include/sys/cdefs.h" 2 3
+# 20 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+# 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/stdlib.h" 1 3
+# 21 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 2 3
+# 33 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+
+
+typedef struct
+{
+  int quot;
+  int rem;
+} div_t;
+
+typedef struct
+{
+  long quot;
+  long rem;
+} ldiv_t;
+
+
+typedef struct
+{
+  long long int quot;
+  long long int rem;
+} lldiv_t;
+
+
+
+
+typedef int (*__compar_fn_t) (const void *, const void *);
+
+
+
+
+
+
+
+int __locale_mb_cur_max (void);
+
+
+
+void abort (void) __attribute__ ((__noreturn__));
+int abs (int);
+
+
+
+
+
+int atexit (void (*__func)(void));
+double atof (const char *__nptr);
+
+
+
+int atoi (const char *__nptr);
+int _atoi_r (struct _reent *, const char *__nptr);
+long atol (const char *__nptr);
+long _atol_r (struct _reent *, const char *__nptr);
+void * bsearch (const void *__key,
+         const void *__base,
+         size_t __nmemb,
+         size_t __size,
+         __compar_fn_t _compar);
+void *calloc(size_t, size_t) __attribute__((__malloc__)) __attribute__((__warn_unused_result__))
+      __attribute__((__alloc_size__(1, 2))) ;
+div_t div (int __numer, int __denom);
+void exit (int __status) __attribute__ ((__noreturn__));
+void free (void *) ;
+char * getenv (const char *__string);
+char * _getenv_r (struct _reent *, const char *__string);
+char * _findenv (const char *, int *);
+char * _findenv_r (struct _reent *, const char *, int *);
+
+
+
+
+long labs (long);
+ldiv_t ldiv (long __numer, long __denom);
+void *malloc(size_t) __attribute__((__malloc__)) __attribute__((__warn_unused_result__)) __attribute__((__alloc_size__(1))) ;
+int mblen (const char *, size_t);
+int _mblen_r (struct _reent *, const char *, size_t, _mbstate_t *);
+int mbtowc (wchar_t *restrict, const char *restrict, size_t);
+int _mbtowc_r (struct _reent *, wchar_t *restrict, const char *restrict, size_t, _mbstate_t *);
+int wctomb (char *, wchar_t);
+int _wctomb_r (struct _reent *, char *, wchar_t, _mbstate_t *);
+size_t mbstowcs (wchar_t *restrict, const char *restrict, size_t);
+size_t _mbstowcs_r (struct _reent *, wchar_t *restrict, const char *restrict, size_t, _mbstate_t *);
+size_t wcstombs (char *restrict, const wchar_t *restrict, size_t);
+size_t _wcstombs_r (struct _reent *, char *restrict, const wchar_t *restrict, size_t, _mbstate_t *);
+# 134 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+char * _mkdtemp_r (struct _reent *, char *);
+int _mkostemp_r (struct _reent *, char *, int);
+int _mkostemps_r (struct _reent *, char *, int, int);
+int _mkstemp_r (struct _reent *, char *);
+int _mkstemps_r (struct _reent *, char *, int);
+char * _mktemp_r (struct _reent *, char *) __attribute__ ((__deprecated__("the use of `mktemp' is dangerous; use `mkstemp' instead")));
+void qsort (void *__base, size_t __nmemb, size_t __size, __compar_fn_t _compar);
+int rand (void);
+void *realloc(void *, size_t) __attribute__((__warn_unused_result__)) __attribute__((__alloc_size__(2))) ;
+# 156 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+void srand (unsigned __seed);
+double strtod (const char *restrict __n, char **restrict __end_PTR);
+double _strtod_r (struct _reent *,const char *restrict __n, char **restrict __end_PTR);
+
+float strtof (const char *restrict __n, char **restrict __end_PTR);
+
+
+
+
+
+
+
+long strtol (const char *restrict __n, char **restrict __end_PTR, int __base);
+long _strtol_r (struct _reent *,const char *restrict __n, char **restrict __end_PTR, int __base);
+unsigned long strtoul (const char *restrict __n, char **restrict __end_PTR, int __base);
+unsigned long _strtoul_r (struct _reent *,const char *restrict __n, char **restrict __end_PTR, int __base);
+# 188 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+int system (const char *__string);
+# 199 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+void _Exit (int __status) __attribute__ ((__noreturn__));
+
+
+
+
+int _putenv_r (struct _reent *, char *__string);
+void * _reallocf_r (struct _reent *, void *, size_t);
+
+
+
+int _setenv_r (struct _reent *, const char *__string, const char *__value, int __overwrite);
+# 221 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+char * __itoa (int, char *, int);
+char * __utoa (unsigned, char *, int);
+# 260 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+long long atoll (const char *__nptr);
+
+long long _atoll_r (struct _reent *, const char *__nptr);
+
+long long llabs (long long);
+lldiv_t lldiv (long long __numer, long long __denom);
+long long strtoll (const char *restrict __n, char **restrict __end_PTR, int __base);
+
+long long _strtoll_r (struct _reent *, const char *restrict __n, char **restrict __end_PTR, int __base);
+
+unsigned long long strtoull (const char *restrict __n, char **restrict __end_PTR, int __base);
+
+unsigned long long _strtoull_r (struct _reent *, const char *restrict __n, char **restrict __end_PTR, int __base);
+# 281 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+int _unsetenv_r (struct _reent *, const char *__string);
+
+
+
+
+
+
+
+char * _dtoa_r (struct _reent *, double, int, int, int *, int*, char**);
+
+void * _malloc_r (struct _reent *, size_t) ;
+void * _calloc_r (struct _reent *, size_t, size_t) ;
+void _free_r (struct _reent *, void *) ;
+void * _realloc_r (struct _reent *, void *, size_t) ;
+void _mstats_r (struct _reent *, char *);
+
+int _system_r (struct _reent *, const char *);
+
+void __eprintf (const char *, const char *, unsigned int, const char *);
+# 319 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+extern long double _strtold_r (struct _reent *, const char *restrict, char **restrict);
+
+extern long double strtold (const char *restrict, char **restrict);
+# 336 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
+
+# 13 "game.c" 2
+
+
+
+# 15 "game.c"
 OBJ_ATTR shadowOAM[128];
-OCCURRENCE occurrences[4];
+OCCURRENCE occurrences[5];
 PLAYER player;
 WEAPON weapon;
 ENEMY ghost;
@@ -506,12 +1202,14 @@ void initGame() {
     hOff = 0;
     vOff = 0;
     score = 0;
+    occurrencesCaught = 0;
     setupInterrupts();
     initPlayer();
     initGhost();
     initghostSpot();
     initEquipment();
     initOccurrences();
+    playSoundA(((signed char*) gamemusic_data), gamemusic_length, 1);
 }
 
 void updateGame() {
@@ -544,10 +1242,8 @@ void drawGame() {
 
 void interruptHandler() {
   *(unsigned short*)0x4000208 = 0;
-  if (*(volatile unsigned short*)0x4000202 & 1<<3) {
+  if (*(volatile unsigned short*)0x4000202 & 1<<5) {
     sanityTimer++;
-  }
-  if (*(volatile unsigned short*)0x4000202 & 1<<4) {
     seconds++;
     if (thermometer.active && seconds % 3 == 0) {
         thermometer.randvar = rand() % 2;
@@ -559,26 +1255,54 @@ void interruptHandler() {
         spiritbox.randvar = rand() % 3;
     }
   }
+
+  if (*(volatile unsigned short*)0x4000202 & 1 << 0) {
+        if (soundA.isPlaying) {
+            soundA.vBlankCount = soundA.vBlankCount + 1;
+            if (soundA.vBlankCount > soundA.duration) {
+                if (soundA.loops) {
+                    playSoundA(soundA.data, soundA.length, soundA.loops);
+                } else {
+                    soundA.isPlaying = 0;
+                    dma[1].cnt = 0;
+                    *(volatile unsigned short*)0x4000102 = (0<<7);
+                }
+            }
+        }
+
+        if (soundB.isPlaying) {
+            soundB.vBlankCount = soundB.vBlankCount + 1;
+            if (soundB.vBlankCount > soundB.duration) {
+                if (soundB.loops) {
+                    playSoundB(soundB.data, soundB.length, soundB.loops);
+                } else {
+                    soundB.isPlaying = 0;
+                    dma[2].cnt = 0;
+                    *(volatile unsigned short*)0x4000106 = (0<<7);
+                }
+            }
+  }
+
+  *(volatile unsigned short*)0x4000202 = 1 << 0;
+ }
+
   *(volatile unsigned short*)0x4000202 = *(volatile unsigned short*)0x4000202;
   *(unsigned short*)0x4000208 = 1;
 }
 void enableTimerInterrupts() {
-  *(unsigned short*)0x4000200 = 1<<3 | 1<<4;
+  *(unsigned short*)0x4000200 |= 1 << 0 | 1<<5;
+  *(unsigned short*)0x4000004 |= 1 << 3;
 
-  *(volatile unsigned short*)0x4000102 = 0;
-  *(volatile unsigned short*)0x4000100 = 0;
-  *(volatile unsigned short*)0x4000102 = 2 | (1<<7) | (1<<6);
-
-  *(volatile unsigned short*)0x4000106 = 0;
-  *(volatile unsigned short*)0x4000104 = 0;
-  *(volatile unsigned short*)0x4000106 = 2 | (1<<7) | (1<<6);
+  *(volatile unsigned short*)0x400010A = 0;
+  *(volatile unsigned short*)0x4000108 = 0;
+  *(volatile unsigned short*)0x400010A = 2 | (1<<7) | (1<<6);
 }
 
 void setupInterrupts() {
-  *(unsigned short*)0x4000208 = 0;
-  *((ihp*)0x03007FFC) = interruptHandler;
-  enableTimerInterrupts();
-  *(unsigned short*)0x4000208 = 1;
+    *(unsigned short*)0x4000208 = 0;
+    *((ihp*)0x03007FFC) = interruptHandler;
+    enableTimerInterrupts();
+    *(unsigned short*)0x4000208 = 1;
 }
 
 
@@ -591,8 +1315,9 @@ void initPlayer() {
     player.row = 160/2 - player.height/2 + vOff;
     player.aniCounter = 0;
     player.curFrame = 0;
-    player.numFrames = 2;
+    player.numFrames = 3;
     player.aniState = SPRITEFRONT;
+    player.idle = 1;
     player.hidden = 0;
     player.equipped = 0;
 
@@ -630,7 +1355,8 @@ void initEquipment() {
     thermometer.active = 0;
     thermometer.state = 0;
     thermometer.randvar = 0;
-    thermometer.temperature = 18;
+    thermometer.temperature = rand() % 5 + 13;
+    thermometer.checking = 0;
 
     ghostbook.row = thermometer.row;
     ghostbook.col = thermometer.col + 16;
@@ -640,6 +1366,7 @@ void initEquipment() {
     ghostbook.state = 0;
     ghostbook.randvar = 0;
     ghostbook.clue = 0;
+    ghostbook.checking = 0;
 
     videocam.row = ghostbook.row;
     videocam.col = ghostbook.col + 16;
@@ -649,6 +1376,7 @@ void initEquipment() {
     videocam.state = 0;
     videocam.randvar = 0;
     videocam.clue = 0;
+    videocam.checking = 0;
 
     spiritbox.row = thermometer.row + 16;
     spiritbox.col = thermometer.col;
@@ -658,6 +1386,7 @@ void initEquipment() {
     spiritbox.state = 0;
     spiritbox.randvar = 0;
     spiritbox.clue = 0;
+    spiritbox.checking = 0;
 
     uvlight.row = videocam.row + 16;
     uvlight.col = videocam.col;
@@ -667,6 +1396,7 @@ void initEquipment() {
     uvlight.state = 0;
     uvlight.randvar = 0;
     uvlight.clue = 0;
+    uvlight.checking = 0;
 }
 
 void initGhost() {
@@ -678,7 +1408,7 @@ void initGhost() {
     ghost.cdel = 1;
     ghost.aniCounter = 0;
     ghost.curFrame = 0;
-    ghost.numFrames = 0;
+    ghost.numFrames = 3;
     ghost.aniState = SPRITEFRONT;
     ghost.active = 0;
     ghost.alert = 0;
@@ -688,74 +1418,89 @@ void initGhost() {
 }
 
 void initghostSpot() {
-    ghostspot.col = 0;
-    ghostspot.row = 140;
-    ghostspot.width = 64;
-    ghostspot.height = 64;
+    ghostspot.col = 32;
+    ghostspot.row = 80;
+    ghostspot.width = 48;
+    ghostspot.height = 48;
 }
 
 void initOccurrences() {
-    for (int i = 0; i < 4; i++) {
-        occurrences[i].width = 8;
-        occurrences[i].height = 8;
+    for (int i = 0; i < 5; i++) {
+        occurrences[i].width = 16;
+        occurrences[i].height = 16;
         occurrences[i].caught = 0;
     }
-    occurrences[0].col = 10;
-    occurrences[0].row = 200;
+    occurrences[0].col = 350;
+    occurrences[0].row = 130;
     occurrences[1].col = 300;
     occurrences[1].row = 240;
-    occurrences[2].col = 100;
-    occurrences[2].row = 10;
-    occurrences[3].col = 500;
-    occurrences[3].row = 150;
+    occurrences[2].col = 140;
+    occurrences[2].row = 450;
+    occurrences[3].col = 20;
+    occurrences[3].row = 500;
+    occurrences[4].col = 480;
+    occurrences[4].row = 360;
 }
 
 void drawOccurrences() {
-    for (int i = 0; i < 4; i++) {
-        if (occurrences[i].caught) {
+    for (int i = 0; i < 5; i++) {
+        if (occurrences[i].row + occurrences[i].height - 1 > vOff + ((screenBlock - 26)/2 * 256)
+        && occurrences[i].row < 160 + vOff + ((screenBlock - 26)/2 * 256)) {
             shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & 0x1FF) | (0 << 14);
-            shadowOAM[18 + i].attr2 = ((0)<<12) | ((8)*32+(6));
+            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & 0x1FF) | (1 << 14);
+            shadowOAM[18 + i].attr2 = ((0)<<12) | ((17)*32+(i*2));
         } else {
-            shadowOAM[18 + i].attr0 = ((occurrences[i].row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[18 + i].attr1 = ((occurrences[i].col - hOff) & 0x1FF) | (0 << 14);
-            shadowOAM[18 + i].attr2 = ((0)<<12) | ((8)*32+(8));
+            shadowOAM[18 + i].attr0 = (2 << 8);
         }
     }
 }
 
 void updatePlayer() {
 
-    if (!player.hidden && buttonTimer % 50 == 0 && !tempText) {
-        if((~((*(volatile unsigned short *)0x04000130)) & ((1<<6))) && player.row > 1) {
+    if (!player.hidden && buttonTimer % 50 == 0 && !thermometer.checking && !ghostbook.checking && !videocam.checking && !spiritbox.checking
+    && !weapon.active) {
+        if((~((*(volatile unsigned short *)0x04000130)) & ((1<<6))) && player.row > 1 && collisionCheck(collisionMap, 512, player.col, player.row - player.rdel)
+            && collisionCheck(collisionMap, 512, player.col + player.width - 1, player.row - player.rdel)
+            && collisionCheck(collisionMap, 512, player.col + player.width/2 - 1, player.row - player.rdel)) {
             player.aniState = SPRITEBACK;
             player.row -= player.rdel;
-            if (player.row - vOff <= 160/2 && vOff - 1 >= 0) {
+            player.idle = 0;
+            if (player.row - ((screenBlock - 26) * 256)/2 - vOff <= 160/2 && vOff - 1 >= 0) {
                 vOff--;
             }
-        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<7))) && player.row + player.height < 256) {
+        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<7))) && player.row + player.height < 576 && collisionCheck(collisionMap, 512, player.col, player.row + player.height - 1 + player.rdel)
+            && collisionCheck(collisionMap, 512, player.col + player.width - 1, player.row + player.height - 1 + player.rdel)
+            && collisionCheck(collisionMap, 512, player.col + player.width/2 - 1, player.row + player.height - 1 + player.rdel)) {
             player.aniState = SPRITEFRONT;
             player.row += player.rdel;
-            if (player.row - vOff >= 160/2 && (vOff + 1) < (256 - 160)) {
+            player.idle = 0;
+            if (player.row - vOff >= 160/2 && (vOff + 1) < (576 - 160)
+            && !(screenBlock == 28 && vOff >= (320 - 160))) {
                 vOff++;
             }
-        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5))) && player.col > 0) {
+        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5))) && player.col > 0 && collisionCheck(collisionMap, 512, player.col - player.cdel, player.row)
+            && collisionCheck(collisionMap, 512, player.col - player.cdel, player.row + player.height - 1)) {
             player.aniState = SPRITELEFT;
             player.col -= player.cdel;
+            player.idle = 0;
             if (player.col - hOff <= 240/2 && hOff - 1 >= 0) {
                 hOff--;
             }
-        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4))) && player.col + player.width < 512) {
+        } else if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4))) && player.col + player.width < 512 && collisionCheck(collisionMap, 512, player.col + player.width - 1 + player.cdel, player.row)
+            && collisionCheck(collisionMap, 512, player.col + player.width - 1 + player.cdel, player.row + player.height - 1)) {
             player.aniState = SPRITERIGHT;
             player.col += player.cdel;
+            player.idle = 0;
             if (player.col - hOff >= 240/2 && (hOff + 1) < (512 - 240)) {
                 hOff++;
             }
+        } else {
+            player.idle = 1;
         }
     }
 
-    if (!ghost.alert && (!collisionCheck(collisionMap, 512, player.col, player.row) | !collisionCheck(collisionMap, 512, player.col + player.width-1, player.row)
-    | !collisionCheck(collisionMap, 512, player.col, player.row + player.height-1) | !collisionCheck(collisionMap, 512, player.col + player.width-1, player.row + player.height-1))
+    if (!ghost.alert && (collisionCheck(collisionMap, 512, player.col, player.row) == 2 | collisionCheck(collisionMap, 512, player.col + player.width-1, player.row) == 2
+    | collisionCheck(collisionMap, 512, player.col, player.row + player.height-1) == 2 | collisionCheck(collisionMap, 512, player.col + player.width-1, player.row + player.height-1) == 2)
     && (!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))) {
         if (player.hidden == 0) {
             player.hidden = 1;
@@ -777,19 +1522,19 @@ void updatePlayer() {
             EMFReader.equipped = 0;
             weapon.equipped = 0;
             camera.equipped = 1;
-            shadowOAM[3].attr0 = (2 << 8);
+            camera.timer = 200;
         } else if (player.equipped == 0) {
             EMFReader.equipped = 0;
             camera.equipped = 0;
             weapon.equipped = 1;
-            shadowOAM[3].attr0 = (2 << 8);
+            weapon.timer = 400;
         }
     }
 
     if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0)))) && !ghost.active && EMFReader.state >= 3 && thermometer.active == 0) {
         thermometer.active = 1;
-        thermometer.row = player.row - 8;
-        thermometer.col = player.col - 10;
+        thermometer.row = ghostspot.row - 8;
+        thermometer.col = ghostspot.col - 10;
         ghostbook.active = 1;
         ghostbook.row = thermometer.row;
         ghostbook.col = thermometer.col + 16;
@@ -804,18 +1549,38 @@ void updatePlayer() {
         uvlight.col = videocam.col;
     }
     buttonTimer++;
+
+    if (vOff > 256 && screenBlock == 26) {
+        screenBlock += 2;
+        vOff -= 256;
+        (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (3<<14);
+    }
+    if (vOff <= 0 && screenBlock == 28) {
+        screenBlock -= 2;
+        vOff += 256;
+        (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (3<<14);
+    }
+    (*(volatile unsigned short *)0x04000012) = vOff;
 }
 
 void drawPlayer() {
+    if (player.aniCounter % 200 == 0) {
+        player.curFrame = (player.curFrame + 1) % player.numFrames;
+    }
+
     if (player.hidden) {
-        shadowOAM[0].attr0 = ((player.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[0].attr1 = ((player.col - hOff) & 0x1FF) | (1 << 14);
-        shadowOAM[0].attr2 = ((0)<<12) | ((0)*32+(9));
+        shadowOAM[0].attr0 = (2 << 8);
     } else {
-        shadowOAM[0].attr0 = ((player.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[0].attr0 = ((player.row - (vOff + ((screenBlock - 26)/2 * 256))) & 0xFF) | (0 << 13) | (0 << 14);
         shadowOAM[0].attr1 = ((player.col - hOff) & 0x1FF) | (1 << 14);
-        shadowOAM[0].attr2 = ((0)<<12) | ((0)*32+(player.aniState*2));
-        player.hidden = 0;
+        if (player.idle) {
+            shadowOAM[0].attr2 = ((0)<<12) | ((0)*32+(player.aniState*2));
+            player.curFrame = 0;
+            player.aniCounter = 0;
+        } else {
+            shadowOAM[0].attr2 = ((0)<<12) | ((player.curFrame*2)*32+(player.aniState*2));
+            player.aniCounter++;
+        }
     }
 
 }
@@ -824,18 +1589,24 @@ void updateEMFReader() {
     if (ghost.active) {
         if (ghost.type == JINN || ghost.type == ONI || ghost.type == WRAITH) {
                 EMFReader.state = 4;
+                ((unsigned short *)0x5000200)[3] = ((31) | (18) << 5 | (19) << 10);
             } else {
                 EMFReader.state = 3;
+                ((unsigned short *)0x5000200)[3] = ((31) | (23) << 5 | (18) << 10);
             }
     } else {
         if (collision(player.col, player.row, player.width, player.height, ghostspot.col, ghostspot.row, ghostspot.width, ghostspot.height)) {
             EMFReader.state = 3;
+            ((unsigned short *)0x5000200)[3] = ((31) | (23) << 5 | (18) << 10);
         } else if (collision(player.col, player.row, player.width, player.height, ghostspot.col - 48, ghostspot.row - 48, ghostspot.width + 96, ghostspot.height + 96)) {
             EMFReader.state = 2;
+            ((unsigned short *)0x5000200)[3] = ((31) | (31) << 5 | (18) << 10);
         } else if (collision(player.col, player.row, player.width, player.height, ghostspot.col - 96, ghostspot.row - 96, ghostspot.width + 192, ghostspot.height + 192)) {
             EMFReader.state = 1;
+            ((unsigned short *)0x5000200)[3] = ((22) | (31) << 5 | (18) << 10);
         } else {
             EMFReader.state = 0;
+            ((unsigned short *)0x5000200)[3] = ((18) | (29) << 5 | (31) << 10);
         }
     }
 }
@@ -844,47 +1615,65 @@ void drawEMFReader() {
     if (EMFReader.equipped) {
         shadowOAM[3].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
         shadowOAM[3].attr1 = ((10) & 0x1FF) | (1 << 14);
-        shadowOAM[3].attr2 = ((0)<<12) | ((8)*32+(EMFReader.state*2));
+        shadowOAM[3].attr2 = ((0)<<12) | ((13)*32+(0));
+        shadowOAM[34].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[34].attr1 = ((10) & 0x1FF) | (1 << 14);
+        shadowOAM[34].attr2 = ((0)<<12) | ((13)*32+(20));
     }
+
 }
+
 
 void drawEquipment() {
     if (thermometer.active) {
-        shadowOAM[4].attr0 = ((thermometer.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[4].attr1 = ((thermometer.col - hOff) & 0x1FF) | (0 << 14);
-        shadowOAM[4].attr2 = ((0)<<12) | ((10)*32+(0));
+        if (ghostspot.row + 48 > vOff + ((screenBlock - 26)/2 * 256) && ghostspot.row < 160 + vOff + ((screenBlock - 26)/2 * 256)) {
+            shadowOAM[4].attr0 = ((thermometer.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[4].attr1 = ((thermometer.col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[4].attr2 = ((0)<<12) | ((12)*32+(0));
 
-        shadowOAM[5].attr0 = ((ghostbook.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[5].attr1 = ((ghostbook.col - hOff) & 0x1FF) | (0 << 14);
-        shadowOAM[5].attr2 = ((0)<<12) | ((10)*32+(1));
+            shadowOAM[5].attr0 = ((ghostbook.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[5].attr1 = ((ghostbook.col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[5].attr2 = ((0)<<12) | ((12)*32+(1));
 
-        shadowOAM[6].attr0 = ((videocam.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[6].attr1 = ((videocam.col - hOff) & 0x1FF) | (0 << 14);
-        shadowOAM[6].attr2 = ((0)<<12) | ((10)*32+(2));
+            shadowOAM[6].attr0 = ((videocam.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[6].attr1 = ((videocam.col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[6].attr2 = ((0)<<12) | ((12)*32+(2));
 
-        shadowOAM[7].attr0 = ((spiritbox.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[7].attr1 = ((spiritbox.col - hOff) & 0x1FF) | (0 << 14);
-        shadowOAM[7].attr2 = ((0)<<12) | ((10)*32+(3));
+            shadowOAM[7].attr0 = ((spiritbox.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[7].attr1 = ((spiritbox.col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[7].attr2 = ((0)<<12) | ((12)*32+(3));
 
-        shadowOAM[8].attr0 = ((uvlight.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[8].attr1 = ((uvlight.col - hOff) & 0x1FF) | (0 << 14);
-        shadowOAM[8].attr2 = ((0)<<12) | ((10)*32+(4));
+            shadowOAM[8].attr0 = ((uvlight.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[8].attr1 = ((uvlight.col - hOff) & 0x1FF) | (0 << 14);
+            shadowOAM[8].attr2 = ((0)<<12) | ((12)*32+(4));
+            if (uvlight.clue == 1) {
+                shadowOAM[12].attr0 = ((uvlight.row + 10 - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[12].attr1 = ((uvlight.col + 10 - hOff) & 0x1FF) | (0 << 14);
+                shadowOAM[12].attr2 = ((0)<<12) | ((12)*32+(5));
+            }
+        } else {
+            shadowOAM[4].attr0 = (2 << 8);
+            shadowOAM[5].attr0 = (2 << 8);
+            shadowOAM[6].attr0 = (2 << 8);
+            shadowOAM[7].attr0 = (2 << 8);
+            shadowOAM[8].attr0 = (2 << 8);
+            shadowOAM[12].attr0 = (2 << 8);
+        }
     }
 }
 void updateWeapon() {
 
     if (weapon.equipped) {
-        if ((!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))){
-
+        if ((!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1)))) && weapon.timer > 400){
+            playSoundB(((signed char*) gunsound_data), gunsound_length, 0);
             weapon.state = player.aniState;
             weapon.timer = 0;
         }
-        if (weapon.timer < 200) {
+        if (weapon.timer < 400) {
             weapon.state = player.aniState;
             weapon.active = 1;
         } else {
             weapon.active = 0;
-            weapon.state = 4;
         }
 
 
@@ -895,7 +1684,7 @@ void updateWeapon() {
             weapon.height = 24;
         } else if (weapon.state == SPRITEBACK) {
             weapon.col = player.col;
-            weapon.row = player.row - 22;
+            weapon.row = player.row - 15;
             weapon.width = 16;
             weapon.height = 24;
         } else if (weapon.state == SPRITERIGHT) {
@@ -904,7 +1693,7 @@ void updateWeapon() {
             weapon.width = 24;
             weapon.height = 16;
         } else if (weapon.state == SPRITELEFT) {
-            weapon.col = player.col - 22;
+            weapon.col = player.col - 15;
             weapon.row = player.row;
             weapon.width = 24;
             weapon.height = 16;
@@ -913,24 +1702,33 @@ void updateWeapon() {
         if (weapon.active
         && collision(weapon.col, weapon.row, weapon.width, weapon.height, ghost.col, ghost.row, ghost.width, ghost.height)) {
             ghost.active = 0;
+            score += 300;
+            playSoundA(((signed char*) gamemusic_data), gamemusic_length, 1);
         }
 
         weapon.timer++;
     }
 }
 void drawWeapon() {
-    if(weapon.equipped) {
+    if(weapon.active) {
         shadowOAM[1].attr0 = ((weapon.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[1].attr1 = ((weapon.col - hOff) & 0x1FF) | (2 << 14);
-        shadowOAM[1].attr2 = ((0)<<12) | ((2)*32+(weapon.state*4));
-        shadowOAM[3].attr2 = ((0)<<12) | ((8)*32+(10));
+        shadowOAM[1].attr1 = ((weapon.col - hOff) & 0x1FF) | (1 << 14);
+        shadowOAM[1].attr2 = ((0)<<12) | ((0)*32+(8 + weapon.state*2));
+        shadowOAM[34].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[34].attr1 = ((10) & 0x1FF) | (1 << 14);
+        shadowOAM[34].attr2 = ((0)<<12) | ((13)*32+(6));
+    } else {
+        shadowOAM[1].attr0 = (2 << 8);
+    }
+    if (weapon.equipped) {
+        shadowOAM[3].attr2 = ((0)<<12) | ((13)*32+(2));
     }
 }
 
 void updateCamera() {
     if (camera.equipped) {
         if ((!(~(oldButtons) & ((1<<1))) && (~buttons & ((1<<1))))){
-
+            playSoundB(((signed char*) camerasound_data), camerasound_length, 0);
             camera.state = player.aniState;
             camera.timer = 0;
         }
@@ -965,10 +1763,13 @@ void updateCamera() {
             camera.height = 48;
         }
 
-        for (int i = 0; i < 4; i++) {
-            if (camera.active
+        for (int i = 0; i < 5; i++) {
+            if (camera.active && (occurrences[i].caught == 0)
             && collision(camera.col, camera.row, camera.width, camera.height, occurrences[i].col, occurrences[i].row, occurrences[i].width, occurrences[i].height)) {
                 occurrences[i].caught = 1;
+                occurrencesCaught++;
+                sanity += 10;
+                score += 100;
             }
         }
         camera.timer++;
@@ -978,8 +1779,17 @@ void updateCamera() {
 void drawCamera() {
     if (camera.equipped) {
         shadowOAM[3].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[3].attr1 = ((10) & 0x1FF) | (0 << 14);
-        shadowOAM[3].attr2 = ((0)<<12) | ((10)*32+(2));
+        shadowOAM[3].attr1 = ((10) & 0x1FF) | (1 << 14);
+        shadowOAM[3].attr2 = ((0)<<12) | ((13)*32+(4));
+        shadowOAM[34].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[34].attr1 = ((10) & 0x1FF) | (1 << 14);
+        shadowOAM[34].attr2 = ((0)<<12) | ((13)*32+(6));
+
+        shadowOAM[36].attr0 = ((15) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[36].attr1 = ((30) & 0x1FF) | (0 << 14);
+        shadowOAM[36].attr2 = ((0)<<12) | ((16)*32+(occurrencesCaught));
+    } else {
+        shadowOAM[36].attr0 = (2 << 8);
     }
 }
 
@@ -990,27 +1800,33 @@ void updateGhost() {
         ghost.path = 0;
         ghost.alert = 0;
         ghost.active = 1;
+        playSoundA(((signed char*) ghostmusic_data), ghostmusic_length, 1);
     }
     if (ghost.active && buttonTimer % 100 == 0) {
         if (!ghost.alert) {
             if (ghost.col <= 200 && ghost.path == 0) {
                 ghost.col += ghost.cdel;
+                ghost.aniState = SPRITERIGHT;
                 if (ghost.col == 200) {
                     ghost.path = 1;
                 }
             } else if (ghost.row <= 120 && ghost.path == 1) {
                 ghost.row += ghost.rdel;
+                ghost.aniState = SPRITEFRONT;
                 if (ghost.row == 120) {
                     ghost.path = 2;
                 }
             } else if (ghost.col >= 30 && ghost.path == 2) {
                 ghost.col -= ghost.cdel;
+                ghost.aniState = SPRITELEFT;
                 if (ghost.col == 30) {
                     ghost.path = 3;
                 }
             } else if (ghost.row >= 20 && ghost.path == 3) {
+                ghost.aniState = SPRITEBACK;
                 ghost.row -= ghost.rdel;
                 if (ghost.row == 20) {
+                    playSoundA(((signed char*) gamemusic_data), gamemusic_length, 1);
                     ghost.active = 0;
                     ghost.path = 0;
                 }
@@ -1018,33 +1834,43 @@ void updateGhost() {
         } else {
             chase();
         }
-        if (!player.hidden && collision(player.col - 16, player.row - 16, player.width*3, player.height*3, ghost.col, ghost.row, ghost.width, ghost.height)) {
+        if (!player.hidden && collision(player.col - 32, player.row - 32, player.width*5, player.height*5, ghost.col, ghost.row, ghost.width, ghost.height)) {
             ghost.alert = 1;
         }
     }
 
 }
 void drawGhost() {
+    if (ghost.aniCounter % 20 == 0) {
+        ghost.curFrame = (ghost.curFrame + 1) % ghost.numFrames;
+    }
     if (ghost.active && buttonTimer % 100 == 0) {
-        shadowOAM[2].attr0 = ((ghost.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[2].attr1 = ((ghost.col - hOff) & 0x1FF) | (1 << 14);
-        shadowOAM[2].attr2 = ((0)<<12) | ((6)*32+(ghost.aniState*2));
+        if (ghost.row + ghost.height - 1 > vOff + ((screenBlock - 26)/2 * 256) && ghost.row < 160 + vOff + ((screenBlock - 26)/2 * 256)) {
+            shadowOAM[2].attr0 = ((ghost.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[2].attr1 = ((ghost.col - hOff) & 0x1FF) | (1 << 14);
+            shadowOAM[2].attr2 = ((0)<<12) | ((6 + ghost.curFrame*2)*32+(ghost.aniState*2));
+        } else {
+            shadowOAM[2].attr0 = (2 << 8);
+        }
+        ghost.aniCounter++;
     } else if (!ghost.active) {
-        shadowOAM[2].attr0 = ((ghost.row - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[2].attr1 = ((ghost.col - hOff) & 0x1FF) | (1 << 14);
-        shadowOAM[2].attr2 = ((0)<<12) | ((6)*32+(9));
+        shadowOAM[2].attr0 = (2 << 8);
     }
 }
 
 void chase() {
     if (ghost.row > player.row) {
+        ghost.aniState = SPRITEBACK;
         ghost.row -= ghost.rdel;
     } else if (ghost.row < player.row) {
+        ghost.aniState = SPRITEFRONT;
         ghost.row += ghost.rdel;
     }
     if (ghost.col > player.col) {
+        ghost.aniState = SPRITELEFT;
         ghost.col -= ghost.cdel;
     } else if (ghost.col < player.col) {
+        ghost.aniState = SPRITERIGHT;
         ghost.col += ghost.cdel;
     }
     if (collision(player.col, player.row, player.width, player.height, ghost.col, ghost.row, ghost.width, ghost.height)) {
@@ -1053,42 +1879,54 @@ void chase() {
 }
 
 void updateSanity() {
-    if (sanity >= 10 && sanityTimer < 3) {
+    if (sanity >= 100 && sanityTimer <= 3) {
         ghost.col = 0;
         ghost.row = 0;
         ghost.path = 0;
         ghost.alert = 0;
-    } else if (sanity >= 10 && sanityTimer > 3) {
+    } else if (sanity >= 100 && sanityTimer > 3) {
         ghost.active = 1;
+        playSoundA(((signed char*) ghostmusic_data), ghostmusic_length, 1);
     }
-    if (!ghost.active && sanityTimer % 10 == 0 && sanityTimer > 0) {
-        sanity++;
+    if (!ghost.active && sanityTimer % 1 == 0 && sanityTimer > 0 && sanity < 100) {
+        sanity += 1;
         sanityTimer = 0;
     }
     if (ghost.active) {
-        *(volatile unsigned short*)0x4000102 = 0;
+        *(volatile unsigned short*)0x400010A = 0;
         sanityTimer = 0;
         sanity = 0;
     } else {
-        *(volatile unsigned short*)0x4000102 = 2 | (1<<7) | (1<<6);
+        *(volatile unsigned short*)0x400010A = 2 | (1<<7) | (1<<6);
     }
 }
 
 void drawSanity() {
+    if (ghost.active || (sanity >= 100 && sanityTimer <= 3)) {
+        shadowOAM[11].attr0 = ((8) & 0xFF) | (0 << 13) | (1 << 14);
+        shadowOAM[11].attr1 = ((240 - 16 - 10) & 0x1FF) | (2 << 14);
+        shadowOAM[11].attr2 = ((0)<<12) | ((13)*32+(12));
+        shadowOAM[10].attr0 = (2 << 8);
+        shadowOAM[9].attr0 = (2 << 8);
 
-    tens = (sanity % 100)/10;
-    ones = ((sanity % 100) % 10);
-    shadowOAM[11].attr0 = ((10) & 0xFF) | (0 << 13) | (0 << 14);
-    shadowOAM[11].attr1 = ((240 - 16 - 10) & 0x1FF) | (1 << 14);
-    shadowOAM[11].attr2 = ((0)<<12) | ((8)*32+(8));
+        shadowOAM[35].attr0 = ((8) & 0xFF) | (0 << 13) | (1 << 14);
+        shadowOAM[35].attr1 = ((240/2 - 16) & 0x1FF) | (2 << 14);
+        shadowOAM[35].attr2 = ((0)<<12) | ((13)*32+(16));
+    } else {
+        shadowOAM[11].attr0 = ((8) & 0xFF) | (0 << 13) | (1 << 14);
+        shadowOAM[11].attr1 = ((240 - 16 - 10) & 0x1FF) | (2 << 14);
+        shadowOAM[11].attr2 = ((0)<<12) | ((13)*32+(8));
 
-    shadowOAM[10].attr0 = ((12) & 0xFF) | (0 << 13) | (0 << 14);
-    shadowOAM[10].attr1 = ((240 - 16 - 10) & 0x1FF) | (0 << 14);
-    shadowOAM[10].attr2 = ((0)<<12) | ((11)*32+(tens));
+        shadowOAM[10].attr0 = ((12) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[10].attr1 = ((240 - 16 - 10) & 0x1FF) | (0 << 14);
+        shadowOAM[10].attr2 = ((0)<<12) | ((16)*32+((sanity % 100)/10));
 
-    shadowOAM[9].attr0 = ((12) & 0xFF) | (0 << 13) | (0 << 14);
-    shadowOAM[9].attr1 = ((240 - 16 - 10 + 8) & 0x1FF) | (0 << 14);
-    shadowOAM[9].attr2 = ((0)<<12) | ((11)*32+(ones));
+        shadowOAM[9].attr0 = ((12) & 0xFF) | (0 << 13) | (0 << 14);
+        shadowOAM[9].attr1 = ((240 - 16 - 10 + 8) & 0x1FF) | (0 << 14);
+        shadowOAM[9].attr2 = ((0)<<12) | ((16)*32+(((sanity % 100) % 10)));
+
+        shadowOAM[35].attr0 = (2 << 8);
+    }
 }
 
 void updateThermometer() {
@@ -1098,41 +1936,49 @@ void updateThermometer() {
         } else if (thermometer.temperature > 5) {
             thermometer.temperature -= 3;
         }
+        thermometer.randvar = 4;
     }
     if (thermometer.active) {
         if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
         && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-            if (tempText == 0) {
-                tempText = 1;
+            if (thermometer.checking == 0) {
+                thermometer.checking = 1;
             } else {
-                tempText = 0;
+                thermometer.checking = 0;
             }
         }
-        if (tempText == 1
+        if (thermometer.checking == 1
         && collision(player.col, player.row, player.width, player.height, thermometer.col, thermometer.row, thermometer.width, thermometer.height)) {
-            if (thermometer.temperature <= 0) {
-                shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(0));
+            player.idle = 1;
+            shadowOAM[16].attr0 = ((120) & 0xFF) | (0 << 13) | (1 << 14);
+            shadowOAM[16].attr1 = ((88) & 0x1FF) | (3 << 14);
+            shadowOAM[16].attr2 = ((0)<<12) | ((4)*32+(24));
+            if (thermometer.temperature < 0) {
+                shadowOAM[15].attr0 = ((137) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[15].attr1 = ((100) & 0x1FF) | (0 << 14);
+                shadowOAM[15].attr2 = ((0)<<12) | ((16)*32+(10));
             } else {
-                shadowOAM[13].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[13].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[13].attr2 = ((0)<<12) | ((12)*32+(4));
+                shadowOAM[15].attr0 = (2 << 8);
             }
+            shadowOAM[14].attr0 = ((137) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[14].attr1 = ((108) & 0x1FF) | (0 << 14);
+            shadowOAM[14].attr2 = ((0)<<12) | ((16)*32+(abs((thermometer.temperature % 100)/10)));
+            shadowOAM[13].attr0 = ((137) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[13].attr1 = ((118) & 0x1FF) | (0 << 14);
+            shadowOAM[13].attr2 = ((0)<<12) | ((16)*32+(abs((thermometer.temperature % 100) % 10)));
         } else {
             shadowOAM[13].attr0 = (2 << 8);
+            shadowOAM[14].attr0 = (2 << 8);
+            shadowOAM[15].attr0 = (2 << 8);
+            shadowOAM[16].attr0 = (2 << 8);
         }
     }
-
 }
 
 void updateUVLight() {
     if (uvlight.active) {
         if ((ghost.type == DEMON) | (ghost.type == JINN) | (ghost.type == POLTERGEIST)) {
             uvlight.clue = 1;
-            shadowOAM[12].attr0 = ((uvlight.row + 10 - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[12].attr1 = ((uvlight.col + 10 - hOff) & 0x1FF) | (0 << 14);
-            shadowOAM[12].attr2 = ((0)<<12) | ((10)*32+(5));
         }
     }
 }
@@ -1146,25 +1992,33 @@ void updateGhostbook() {
     if (ghostbook.active) {
         if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
         && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
-            if (tempText == 0) {
-                tempText = 1;
+            if (ghostbook.checking == 0) {
+                ghostbook.checking = 1;
             } else {
-                tempText = 0;
+                ghostbook.checking = 0;
             }
         }
-        if (tempText == 1
+        if (ghostbook.checking
         && collision(player.col, player.row, player.width, player.height, ghostbook.col, ghostbook.row, ghostbook.width, ghostbook.height)) {
+            player.idle = 1;
+            shadowOAM[25].attr0 = ((80) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[25].attr1 = ((80) & 0x1FF) | (3 << 14);
+            shadowOAM[25].attr2 = ((0)<<12) | ((0)*32+(16));
             if (ghostbook.clue == 1) {
-                shadowOAM[14].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[14].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[14].attr2 = ((0)<<12) | ((12)*32+(0));
+                shadowOAM[23].attr0 = ((90) & 0xFF) | (0 << 13) | (2 << 14);
+                shadowOAM[23].attr1 = ((90) & 0x1FF) | (2 << 14);
+                shadowOAM[23].attr2 = ((0)<<12) | ((0)*32+(24));
+                shadowOAM[24].attr0 = ((90) & 0xFF) | (0 << 13) | (2 << 14);
+                shadowOAM[24].attr1 = ((122) & 0x1FF) | (2 << 14);
+                shadowOAM[24].attr2 = ((0)<<12) | ((0)*32+(26));
             } else {
-                shadowOAM[14].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[14].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[14].attr2 = ((0)<<12) | ((12)*32+(4));
+                shadowOAM[23].attr0 = (2 << 8);
+                shadowOAM[24].attr0 = (2 << 8);
             }
         } else {
-            shadowOAM[14].attr0 = (2 << 8);
+            shadowOAM[23].attr0 = (2 << 8);
+            shadowOAM[24].attr0 = (2 << 8);
+            shadowOAM[25].attr0 = (2 << 8);
         }
     }
 
@@ -1179,25 +2033,44 @@ void updateVideoCam() {
     if (videocam.active) {
         if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
         && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
-            if (tempText == 0) {
-                tempText = 1;
+            if (videocam.checking == 0) {
+                videocam.checking = 1;
             } else {
-                tempText = 0;
+                videocam.checking = 0;
             }
         }
-        if (tempText == 1
+        if (videocam.checking == 1
         && collision(player.col, player.row, player.width, player.height, videocam.col, videocam.row, videocam.width, videocam.height)) {
+            player.idle = 1;
+            shadowOAM[26].attr0 = ((0) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[26].attr1 = ((0) & 0x1FF) | (1 << 14);
+            shadowOAM[26].attr2 = ((0)<<12) | ((2)*32+(8));
+            shadowOAM[27].attr0 = ((0) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[27].attr1 = ((224) & 0x1FF) | (1 << 14);
+            shadowOAM[27].attr2 = ((0)<<12) | ((2)*32+(10));
+            shadowOAM[28].attr0 = ((144) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[28].attr1 = ((0) & 0x1FF) | (1 << 14);
+            shadowOAM[28].attr2 = ((0)<<12) | ((2)*32+(12));
+            shadowOAM[29].attr0 = ((144) & 0xFF) | (0 << 13) | (0 << 14);
+            shadowOAM[29].attr1 = ((224) & 0x1FF) | (1 << 14);
+            shadowOAM[29].attr2 = ((0)<<12) | ((2)*32+(14));
+            shadowOAM[30].attr0 = ((8) & 0xFF) | (0 << 13) | (1 << 14);
+            shadowOAM[30].attr1 = ((116) & 0x1FF) | (0 << 14);
+            shadowOAM[30].attr2 = ((0)<<12) | ((4)*32+(8));
             if (videocam.clue == 1) {
-                shadowOAM[15].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[15].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[15].attr2 = ((0)<<12) | ((12)*32+(0));
+                shadowOAM[31].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[31].attr1 = ((100) & 0x1FF) | (0 << 14);
+                shadowOAM[31].attr2 = ((0)<<12) | ((12)*32+(12));
             } else {
-                shadowOAM[15].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[15].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[15].attr2 = ((0)<<12) | ((12)*32+(4));
+                shadowOAM[31].attr0 = (2 << 8);
             }
         } else {
-            shadowOAM[15].attr0 = (2 << 8);
+            shadowOAM[26].attr0 = (2 << 8);
+            shadowOAM[27].attr0 = (2 << 8);
+            shadowOAM[28].attr0 = (2 << 8);
+            shadowOAM[29].attr0 = (2 << 8);
+            shadowOAM[30].attr0 = (2 << 8);
+            shadowOAM[31].attr0 = (2 << 8);
         }
     }
 
@@ -1212,25 +2085,26 @@ void updateSpiritBox() {
     if (spiritbox.active) {
         if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))
         && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-            if (tempText == 0) {
-                tempText = 1;
+            if (spiritbox.checking == 0) {
+                spiritbox.checking = 1;
             } else {
-                tempText = 0;
+                spiritbox.checking = 0;
+            }
+            if (spiritbox.clue == 1) {
+                playSoundB(((signed char*) spiritboxsound_data), spiritboxsound_length, 1);
+            } else {
+                playSoundB(((signed char*) staticsound_data), staticsound_length, 1);
             }
         }
-        if (tempText == 1
+        if (spiritbox.checking
         && collision(player.col, player.row, player.width, player.height, spiritbox.col, spiritbox.row, spiritbox.width, spiritbox.height)) {
-            if (spiritbox.clue == 1) {
-                shadowOAM[16].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[16].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[16].attr2 = ((0)<<12) | ((12)*32+(0));
-            } else {
-                shadowOAM[16].attr0 = ((140) & 0xFF) | (0 << 13) | (0 << 14);
-                shadowOAM[16].attr1 = ((20) & 0x1FF) | (2 << 14);
-                shadowOAM[16].attr2 = ((0)<<12) | ((12)*32+(4));
-            }
+            *(volatile unsigned short*)0x4000102 = (0<<7);
+            player.idle = 1;
         } else {
-            shadowOAM[16].attr0 = (2 << 8);
+            *(volatile unsigned short*)0x4000102 = (1<<7);
+            if (soundB.data == ((signed char*) spiritboxsound_data) || soundB.data == ((signed char*) staticsound_data)) {
+                *(volatile unsigned short*)0x4000106 = (0<<7);
+            }
         }
     }
 

@@ -317,6 +317,9 @@ typedef void (*ihp)(void);
 // Display Status Register
 #define REG_DISPSTAT *(unsigned short*)0x4000004
 
+// Interrupt constants for turning them on
+#define INT_VBLANK_ENABLE 1 << 3
+
 // Interrupt Settings
 #define INT_VBLANK 1 << 0   
 #define INT_TM0 1<<3    

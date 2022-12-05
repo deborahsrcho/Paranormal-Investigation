@@ -318,6 +318,7 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
+    int idle;
     int aniState;
     int curFrame;
     int numFrames;
@@ -368,6 +369,7 @@ typedef struct {
     int state;
     int randvar;
     int clue;
+    int checking;
 } EQUIPMENT;
 typedef struct {
     int row;
@@ -378,6 +380,7 @@ typedef struct {
     int state;
     int randvar;
     int temperature;
+    int checking;
 } THERMOMETER;
 typedef struct {
     int row;
@@ -423,7 +426,8 @@ extern EQUIPMENT spiritbox;
 extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
-extern OCCURRENCE occurrences[4];
+extern OCCURRENCE occurrences[5];
+extern int screenBlock;
 int path;
 int vOff;
 int hOff;
@@ -432,9 +436,6 @@ int sanity;
 int seconds;
 int buttonTimer;
 int score;
-
-int ones;
-int tens;
 
 void initGame();
 void updateGame();
@@ -472,8 +473,11 @@ void updateCamera();
 void drawCamera();
 # 43 "main.c" 2
 # 1 "startBg.h" 1
-# 21 "startBg.h"
-extern const unsigned short startBgBitmap[19200];
+# 22 "startBg.h"
+extern const unsigned short startBgTiles[8000];
+
+
+extern const unsigned short startBgMap[1024];
 
 
 extern const unsigned short startBgPal[256];
@@ -496,8 +500,11 @@ extern const unsigned short manualBgMap[1024];
 extern const unsigned short manualBgPal[256];
 # 46 "main.c" 2
 # 1 "pauseBg.h" 1
-# 21 "pauseBg.h"
-extern const unsigned short pauseBgBitmap[19200];
+# 22 "pauseBg.h"
+extern const unsigned short pauseBgTiles[7552];
+
+
+extern const unsigned short pauseBgMap[1024];
 
 
 extern const unsigned short pauseBgPal[256];
@@ -510,8 +517,11 @@ extern const unsigned short winBgBitmap[19200];
 extern const unsigned short winBgPal[256];
 # 48 "main.c" 2
 # 1 "loseBg.h" 1
-# 21 "loseBg.h"
-extern const unsigned short loseBgBitmap[19200];
+# 22 "loseBg.h"
+extern const unsigned short loseBgTiles[7664];
+
+
+extern const unsigned short loseBgMap[1024];
 
 
 extern const unsigned short loseBgPal[256];
@@ -525,10 +535,10 @@ extern const unsigned short spritesheetPal[256];
 # 50 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
-extern const unsigned short backgroundTiles[32];
+extern const unsigned short backgroundTiles[27264];
 
 
-extern const unsigned short backgroundMap[2048];
+extern const unsigned short backgroundMap[6144];
 
 
 extern const unsigned short backgroundPal[256];
@@ -547,6 +557,46 @@ void initCursor();
 void drawManual();
 void updateCursor();
 # 52 "main.c" 2
+# 1 "sound.h" 1
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void setupInterrupts();
+void interruptHandler();
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+# 49 "sound.h"
+typedef struct{
+    const signed char* data;
+    int length;
+    int frequency;
+    int isPlaying;
+    int loops;
+    int duration;
+    int priority;
+    int vBlankCount;
+} SOUND;
+
+SOUND soundA;
+SOUND soundB;
+# 53 "main.c" 2
+# 1 "losesound.h" 1
+
+
+extern const unsigned int losesound_sampleRate;
+extern const unsigned int losesound_length;
+extern const signed char losesound_data[];
+# 54 "main.c" 2
+# 1 "startmusic.h" 1
+
+
+extern const unsigned int startmusic_sampleRate;
+extern const unsigned int startmusic_length;
+extern const signed char startmusic_data[];
+# 55 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -565,11 +615,13 @@ void game();
 void pause();
 void lose();
 void win();
+void initStart();
 void initialize();
 
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
 int seed;
+int screenBlock;
 extern OBJ_ATTR shadowOAM[128];
 
 int main() {
@@ -604,22 +656,33 @@ int main() {
 }
 
 void initialize() {
-
     (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
 
     oldButtons = buttons;
     buttons = (*(volatile unsigned short *)0x04000130);
 
+    screenBlock = 26;
     hideSprites();
+    initStart();
     goToStart();
+
+    setupSounds();
+}
+
+void initStart() {
+    playSoundA(((signed char*) startmusic_data), startmusic_length, 1);
 }
 
 void goToStart() {
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(startBgBitmap);
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    DMANow(3, startBgTiles, &((charblock *)0x6000000)[0], 16000 / 2);
+    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, startBgMap, &((screenblock *)0x6000000)[31], 1024);
+
     waitForVBlank();
-    flipPage();
+    hideSprites();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
 
     state = START;
 }
@@ -656,14 +719,14 @@ void instructions() {
 
 void goToGame() {
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
-    DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 64 / 2);
+    DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 54528 / 2);
     DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[30], 1024*2);
+    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[26], 12288/2);
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((30)<<8) | (0<<7) | (1<<14);
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((26)<<8) | (1<<7) | (3<<14);
 
-    DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);
+    DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
 
     waitForVBlank();
     state = GAME;
@@ -683,10 +746,10 @@ void game() {
 void goToManual() {
 
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<9) | (1<<12);
-    (*(volatile unsigned short*)0x400000A) = ((2)<<2) | ((20)<<8) | (0<<7) | (0<<14);
-    DMANow(3, manualBgTiles, &((charblock *)0x6000000)[2], 7680 / 2);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    DMANow(3, manualBgTiles, &((charblock *)0x6000000)[0], 7680 / 2);
     DMANow(3, manualBgPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, manualBgMap, &((screenblock *)0x6000000)[20], 1024);
+    DMANow(3, manualBgMap, &((screenblock *)0x6000000)[31], 1024);
 
     waitForVBlank();
     hideSprites();
@@ -713,22 +776,26 @@ void manual() {
 }
 
 void goToPause() {
+    pauseSound();
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    DMANow(3, pauseBgTiles, &((charblock *)0x6000000)[0], 15104 / 2);
+    DMANow(3, pauseBgPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, pauseBgMap, &((screenblock *)0x6000000)[31], 1024);
+
     waitForVBlank();
-    flipPage();
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(pauseBgBitmap);
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
     state = PAUSE;
 }
 
 void pause() {
     if((!(~(oldButtons) & ((1<<2))) && (~buttons & ((1<<2))))) {
+        unpauseSound();
         goToGame();
     }
     if((!(~(oldButtons) & ((1<<8))) && (~buttons & ((1<<8))))) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();
@@ -749,6 +816,7 @@ void goToWin() {
 
 void win() {
     if ((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();
@@ -756,19 +824,22 @@ void win() {
 }
 
 void goToLose() {
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    DMANow(3, loseBgTiles, &((charblock *)0x6000000)[0], 15328 / 2);
+    DMANow(3, loseBgPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, loseBgMap, &((screenblock *)0x6000000)[31], 1024);
+
     waitForVBlank();
-    flipPage();
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(loseBgBitmap);
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    playSoundA(((signed char*) losesound_data), losesound_length, 0);
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
     state = LOSE;
 }
 
 void lose() {
     if ((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
+        initStart();
         goToStart();
         waitForVBlank();
         flipPage();

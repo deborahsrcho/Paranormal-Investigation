@@ -1,0 +1,45 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "collisionmap.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "collision.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "collisionmap.tmx": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 398,
+                "y": 236.5
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/debor/Documents/School/CS2261/Milestone 4/maps/collisionmap",
+    "map.height": 72,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 64,
+    "openFiles": [
+        "collision.tsx",
+        "collisionmap.tmx"
+    ],
+    "project": "collisionmap.tiled-project",
+    "recentFiles": [
+        "collision.tsx",
+        "collisionmap.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    }
+}

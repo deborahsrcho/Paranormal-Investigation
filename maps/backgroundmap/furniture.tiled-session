@@ -1,0 +1,139 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "altars.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "bathroom.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "bathroom_shadow.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "beds.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "boxes.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "chairs.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "collision.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "couches.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "couchtables.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "decorations.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "flooring.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "furniture.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "kidsroom.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "kitchen.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map.tmx": {
+            "scale": 2,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 236.25,
+                "y": 278
+            }
+        },
+        "rugs.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "storage.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tables.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "wallpaper and flooring.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/debor/Documents/School/CS2261/Milestone 2/gameBg",
+    "map.height": 32,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 32,
+    "openFiles": [
+        "map.tmx",
+        "wallpaper and flooring.tsx",
+        "bathroom.tsx",
+        "tables.tsx",
+        "decorations.tsx",
+        "rugs.tsx",
+        "couches.tsx",
+        "couchtables.tsx",
+        "beds.tsx",
+        "storage.tsx",
+        "chairs.tsx",
+        "kitchen.tsx",
+        "boxes.tsx",
+        "kidsroom.tsx",
+        "altars.tsx",
+        "collision.tsx"
+    ],
+    "project": "furniture.tiled-project",
+    "recentFiles": [
+        "collision.tsx",
+        "altars.tsx",
+        "kidsroom.tsx",
+        "boxes.tsx",
+        "kitchen.tsx",
+        "chairs.tsx",
+        "storage.tsx",
+        "beds.tsx",
+        "couchtables.tsx",
+        "couches.tsx",
+        "rugs.tsx",
+        "decorations.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    },
+    "tileset.transparentColor": "#000000",
+    "tileset.useTransparentColor": false
+}
