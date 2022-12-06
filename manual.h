@@ -5,8 +5,8 @@ typedef struct {
 } CURSOR;
 
 extern CURSOR cursor;
-extern OBJ_ATTR shadowOAM[128];
+int checkTile;
+int emptyTile;
 
 void initCursor();
-void drawManual();
 void updateCursor();

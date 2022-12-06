@@ -228,6 +228,8 @@ extern OBJ_ATTR shadowOAM[];
 #define ATTR0_WIDE         (1 << 14)
 #define ATTR0_TALL         (2 << 14)
 
+#define REG_BLDCNT *(u16*)(0x04000050)
+#define REG_BLDALPHA *(u16*)(0x04000052)
 // Attribute 1
 #define ATTR1_HFLIP  (1 << 12)
 #define ATTR1_VFLIP  (1 << 13)

@@ -36,9 +36,11 @@ typedef struct {
     int curFrame;
     int numFrames;
     int alert;
-    int route;
-    int path;
     int type;
+    int caught;
+    int distance; 
+    int rowPrev;
+    int colPrev; 
 } ENEMY;
 typedef struct {
     int row;
@@ -81,6 +83,7 @@ typedef struct {
     int timer;
 } CAMERA;
 typedef struct {
+    int location;
     int row;
     int col;
     int width; 
@@ -101,6 +104,7 @@ extern void goToWin();
 #define MAPWIDTH 512
 #define MAPHEIGHT 576
 #define OCCURRENCECOUNT 5
+#define ITEMCOUNT 6
 #define SANITYMAX 100
 
 extern PLAYER player;
@@ -116,16 +120,22 @@ extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
 extern OCCURRENCE occurrences[OCCURRENCECOUNT];
+extern OCCURRENCE items[ITEMCOUNT];
 extern int screenBlock;
+extern int cheat;
 int path;
 int vOff;
 int hOff;
 int sanityTimer;
 int sanity;
 int seconds;
-int buttonTimer;
+int orbTimer;
 int score;
 int occurrencesCaught;
+int itemsCollected;
+int ghostBanished;
+int orbCol;
+int orbRow;
 
 void initGame();
 void updateGame();
@@ -160,3 +170,9 @@ void initOccurrences();
 void drawOccurrences();
 void updateCamera();
 void drawCamera(); 
+void hideText();
+
+void initItems();
+void drawItems();
+void updateItems();
+void ghostMovement();

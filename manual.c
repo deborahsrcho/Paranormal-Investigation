@@ -3,14 +3,12 @@
 #include "manual.h"
 
 CURSOR cursor;
-void initCursor() {
-    cursor.col = 0;
-    cursor.row = 0;
-    cursor.type = DEMON;
-}
 
-void drawManual() {
-    DMANow(3, shadowOAM, OAM, sizeof(shadowOAM)/2);
+void initCursor() {
+    cursor.col = 3;
+    cursor.row = 4;
+    checkTile = SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)];
+    emptyTile = SCREENBLOCK[20].tilemap[OFFSET(3, 9, 32)];
 }
 
 void updateCursor() {
@@ -28,31 +26,46 @@ void updateCursor() {
     }
 
     if (cursor.type == DEMON) {
-        cursor.col = 1;
-        cursor.row = 2;
+        cursor.col = 3;
+        cursor.row = 4;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(3, 4, 32)] = emptyTile;
     }
     if (cursor.type == JINN) {
-        cursor.col = 1;
-        cursor.row = 8;
+        cursor.col = 3;
+        cursor.row = 9;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(3, 9, 32)] = emptyTile;
     }
     if (cursor.type == ONI) {
-        cursor.col = 1;
+        cursor.col = 3;
         cursor.row = 14;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(3, 14, 32)] = emptyTile;
     }
     if (cursor.type == POLTERGEIST) {
-        cursor.col = 17;
-        cursor.row = 2;
+        cursor.col = 16;
+        cursor.row = 4;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(16, 4, 32)] = emptyTile;
     }
     if (cursor.type == BANSHEE) {
-        cursor.col = 17;
-        cursor.row = 8;
+        cursor.col = 16;
+        cursor.row = 9;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(16, 9, 32)] = emptyTile;
     }
     if (cursor.type == WRAITH) {
-        cursor.col = 17;
+        cursor.col = 16;
         cursor.row = 14;
+        SCREENBLOCK[20].tilemap[OFFSET(cursor.col, cursor.row, 32)] = checkTile;
+    } else {
+        SCREENBLOCK[20].tilemap[OFFSET(16, 14, 32)] = emptyTile;
     }
 
-    shadowOAM[17].attr0 = ((cursor.row*8) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-    shadowOAM[17].attr1 = ((cursor.col*8) & COLMASK) | ATTR1_TINY;
-    shadowOAM[17].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(6, 8);
 }

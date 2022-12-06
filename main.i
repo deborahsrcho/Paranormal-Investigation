@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
-# 40 "main.c"
+# 37 "main.c"
 # 1 "gba.h" 1
 
 
@@ -77,7 +77,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 256 "gba.h"
+# 258 "gba.h"
 void hideSprites();
 
 
@@ -99,9 +99,9 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 312 "gba.h"
+# 314 "gba.h"
 typedef void (*ihp)(void);
-# 41 "main.c" 2
+# 38 "main.c" 2
 # 1 "print.h" 1
 # 26 "print.h"
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
@@ -308,7 +308,7 @@ void mgba_printf(const char* string, ...);
 void mgba_break(void);
 uint8_t mgba_open(void);
 void mgba_close(void);
-# 42 "main.c" 2
+# 39 "main.c" 2
 # 1 "game.h" 1
 typedef struct {
     int row;
@@ -348,9 +348,11 @@ typedef struct {
     int curFrame;
     int numFrames;
     int alert;
-    int route;
-    int path;
     int type;
+    int caught;
+    int distance;
+    int rowPrev;
+    int colPrev;
 } ENEMY;
 typedef struct {
     int row;
@@ -393,6 +395,7 @@ typedef struct {
     int timer;
 } CAMERA;
 typedef struct {
+    int location;
     int row;
     int col;
     int width;
@@ -414,6 +417,8 @@ extern void goToWin();
 
 
 
+
+
 extern PLAYER player;
 extern WEAPON weapon;
 extern ENEMY ghost;
@@ -427,15 +432,22 @@ extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
 extern OCCURRENCE occurrences[5];
+extern OCCURRENCE items[6];
 extern int screenBlock;
+extern int cheat;
 int path;
 int vOff;
 int hOff;
 int sanityTimer;
 int sanity;
 int seconds;
-int buttonTimer;
+int orbTimer;
 int score;
+int occurrencesCaught;
+int itemsCollected;
+int ghostBanished;
+int orbCol;
+int orbRow;
 
 void initGame();
 void updateGame();
@@ -467,11 +479,16 @@ void updateVideoCam();
 void updateSpiritBox();
 
 void initOccurrences();
-void updateOcurrences();
 void drawOccurrences();
 void updateCamera();
 void drawCamera();
-# 43 "main.c" 2
+void hideText();
+
+void initItems();
+void drawItems();
+void updateItems();
+void ghostMovement();
+# 40 "main.c" 2
 # 1 "startBg.h" 1
 # 22 "startBg.h"
 extern const unsigned short startBgTiles[8000];
@@ -481,41 +498,67 @@ extern const unsigned short startBgMap[1024];
 
 
 extern const unsigned short startBgPal[256];
+# 41 "main.c" 2
+# 1 "instructionsPg1.h" 1
+# 22 "instructionsPg1.h"
+extern const unsigned short instructionsPg1Tiles[6224];
+
+
+extern const unsigned short instructionsPg1Map[1024];
+
+
+extern const unsigned short instructionsPg1Pal[256];
+# 42 "main.c" 2
+# 1 "instructionsPg2.h" 1
+# 22 "instructionsPg2.h"
+extern const unsigned short instructionsPg2Tiles[6336];
+
+
+extern const unsigned short instructionsPg2Map[1024];
+
+
+extern const unsigned short instructionsPg2Pal[256];
+# 43 "main.c" 2
+# 1 "instructionsPg3.h" 1
+# 22 "instructionsPg3.h"
+extern const unsigned short instructionsPg3Tiles[6368];
+
+
+extern const unsigned short instructionsPg3Map[1024];
+
+
+extern const unsigned short instructionsPg3Pal[256];
 # 44 "main.c" 2
-# 1 "instructionsBg.h" 1
-# 21 "instructionsBg.h"
-extern const unsigned short instructionsBgBitmap[19200];
-
-
-extern const unsigned short instructionsBgPal[256];
-# 45 "main.c" 2
 # 1 "manualBg.h" 1
 # 22 "manualBg.h"
-extern const unsigned short manualBgTiles[3840];
+extern const unsigned short manualBgTiles[6160];
 
 
 extern const unsigned short manualBgMap[1024];
 
 
 extern const unsigned short manualBgPal[256];
-# 46 "main.c" 2
+# 45 "main.c" 2
 # 1 "pauseBg.h" 1
 # 22 "pauseBg.h"
-extern const unsigned short pauseBgTiles[7552];
+extern const unsigned short pauseBgTiles[7488];
 
 
 extern const unsigned short pauseBgMap[1024];
 
 
 extern const unsigned short pauseBgPal[256];
-# 47 "main.c" 2
+# 46 "main.c" 2
 # 1 "winBg.h" 1
-# 21 "winBg.h"
-extern const unsigned short winBgBitmap[19200];
+# 22 "winBg.h"
+extern const unsigned short winBgTiles[6864];
+
+
+extern const unsigned short winBgMap[1024];
 
 
 extern const unsigned short winBgPal[256];
-# 48 "main.c" 2
+# 47 "main.c" 2
 # 1 "loseBg.h" 1
 # 22 "loseBg.h"
 extern const unsigned short loseBgTiles[7664];
@@ -525,14 +568,14 @@ extern const unsigned short loseBgMap[1024];
 
 
 extern const unsigned short loseBgPal[256];
-# 49 "main.c" 2
+# 48 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 50 "main.c" 2
+# 49 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[27264];
@@ -542,7 +585,7 @@ extern const unsigned short backgroundMap[6144];
 
 
 extern const unsigned short backgroundPal[256];
-# 51 "main.c" 2
+# 50 "main.c" 2
 # 1 "manual.h" 1
 typedef struct {
     int row;
@@ -551,12 +594,12 @@ typedef struct {
 } CURSOR;
 
 extern CURSOR cursor;
-extern OBJ_ATTR shadowOAM[128];
+int checkTile;
+int emptyTile;
 
 void initCursor();
-void drawManual();
 void updateCursor();
-# 52 "main.c" 2
+# 51 "main.c" 2
 # 1 "sound.h" 1
 void setupSounds();
 void playSoundA(const signed char* sound, int length, int loops);
@@ -582,21 +625,41 @@ typedef struct{
 
 SOUND soundA;
 SOUND soundB;
-# 53 "main.c" 2
+# 52 "main.c" 2
 # 1 "losesound.h" 1
 
 
 extern const unsigned int losesound_sampleRate;
 extern const unsigned int losesound_length;
 extern const signed char losesound_data[];
-# 54 "main.c" 2
+# 53 "main.c" 2
 # 1 "startmusic.h" 1
 
 
 extern const unsigned int startmusic_sampleRate;
 extern const unsigned int startmusic_length;
 extern const signed char startmusic_data[];
+# 54 "main.c" 2
+# 1 "instructions.h" 1
+int page;
+
+void initInstructions();
+void updatePage();
 # 55 "main.c" 2
+# 1 "win.h" 1
+extern int score;
+int rank;
+int rankCol;
+int medalRow;
+int scoreRow;
+int scoreCol;
+int aniTimer;
+
+enum {GOLD, SILVER, BRONZE};
+
+void calculateRank();
+void updateWin();
+# 56 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;
@@ -620,8 +683,10 @@ void initialize();
 
 enum {START, INSTRUCTIONS, GAME, MANUAL, PAUSE, WIN, LOSE};
 int state;
+int statePrev;
 int seed;
 int screenBlock;
+int cheat;
 extern OBJ_ATTR shadowOAM[128];
 
 int main() {
@@ -656,6 +721,8 @@ int main() {
 }
 
 void initialize() {
+    cheat = 0;
+
     (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
 
     oldButtons = buttons;
@@ -670,6 +737,7 @@ void initialize() {
 }
 
 void initStart() {
+    stopSound();
     playSoundA(((signed char*) startmusic_data), startmusic_length, 1);
 }
 
@@ -684,6 +752,8 @@ void goToStart() {
     hideSprites();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
 
+    screenBlock = 26;
+
     state = START;
 }
 
@@ -695,25 +765,44 @@ void start() {
         initGame();
     }
     if ((!(~(oldButtons) & ((1<<2))) && (~buttons & ((1<<2))))) {
+        statePrev = START;
         goToInstructions();
+    }
+    if ((!(~(oldButtons) & ((1<<9))) && (~buttons & ((1<<9))))) {
+        if (cheat == 0) {
+            cheat = 1;
+        } else {
+            cheat = 0;
+        }
     }
 }
 
 void goToInstructions() {
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(instructionsBgBitmap);
+    initInstructions();
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
+    DMANow(3, instructionsPg1Tiles, &((charblock *)0x6000000)[0], 12448 / 2);
+    DMANow(3, instructionsPg1Pal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, instructionsPg1Map, &((screenblock *)0x6000000)[31], 1024);
+
     waitForVBlank();
-    flipPage();
     hideSprites();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
+
     state = INSTRUCTIONS;
 }
 
 void instructions() {
-    if ((!(~(oldButtons) & ((1<<2))) && (~buttons & ((1<<2))))) {
-        goToStart();
-        waitForVBlank();
-        flipPage();
+    updatePage();
+    if (statePrev == GAME) {
+        if ((!(~(oldButtons) & ((1<<9))) && (~buttons & ((1<<9))))) {
+            goToGame();
+        }
+    }
+    if (statePrev == START) {
+        if ((!(~(oldButtons) & ((1<<2))) && (~buttons & ((1<<2))))) {
+            goToStart();
+        }
     }
 }
 
@@ -723,7 +812,7 @@ void goToGame() {
     DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 512 / 2);
     DMANow(3, backgroundMap, &((screenblock *)0x6000000)[26], 12288/2);
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((26)<<8) | (1<<7) | (3<<14);
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (3<<14);
 
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);
     DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
@@ -741,15 +830,22 @@ void game() {
     if((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
         goToManual();
     }
+    if ((!(~(oldButtons) & ((1<<9))) && (~buttons & ((1<<9))))) {
+        statePrev = GAME;
+        goToInstructions();
+    }
+    if (ghostBanished) {
+        goToWin();
+    }
 }
 
 void goToManual() {
 
-    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9) | (1<<12);
-    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
-    DMANow(3, manualBgTiles, &((charblock *)0x6000000)[0], 7680 / 2);
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((20)<<8) | (0<<7) | (0<<14);
+    DMANow(3, manualBgTiles, &((charblock *)0x6000000)[0], 12320 / 2);
     DMANow(3, manualBgPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, manualBgMap, &((screenblock *)0x6000000)[31], 1024);
+    DMANow(3, manualBgMap, &((screenblock *)0x6000000)[20], 1024);
 
     waitForVBlank();
     hideSprites();
@@ -760,18 +856,10 @@ void goToManual() {
 }
 
 void manual() {
-    drawManual();
     updateCursor();
 
     if((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
-        shadowOAM[17].attr0 = (2 << 8);
         goToGame();
-    }
-    if ((!(~(oldButtons) & ((1<<0))) && (~buttons & ((1<<0))))) {
-        if (cursor.type == ghost.type) {
-            score += 500;
-            goToWin();
-        }
     }
 }
 
@@ -779,7 +867,7 @@ void goToPause() {
     pauseSound();
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
     (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
-    DMANow(3, pauseBgTiles, &((charblock *)0x6000000)[0], 15104 / 2);
+    DMANow(3, pauseBgTiles, &((charblock *)0x6000000)[0], 14976 / 2);
     DMANow(3, pauseBgPal, ((unsigned short *)0x5000000), 512 / 2);
     DMANow(3, pauseBgMap, &((screenblock *)0x6000000)[31], 1024);
 
@@ -797,29 +885,32 @@ void pause() {
     if((!(~(oldButtons) & ((1<<8))) && (~buttons & ((1<<8))))) {
         initStart();
         goToStart();
-        waitForVBlank();
-        flipPage();
     }
 }
 
 void goToWin() {
+    calculateRank();
+    (*(volatile unsigned short *)0x4000000) = 0 | (1<<9) | (1<<12);
+    (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((15)<<8) | (0<<7) | (0<<14);
+    DMANow(3, winBgTiles, &((charblock *)0x6000000)[0], 13728 / 2);
+    DMANow(3, winBgPal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, winBgMap, &((screenblock *)0x6000000)[15], 1024);
+
     waitForVBlank();
-    flipPage();
-    (*(volatile unsigned short *)0x4000000) = 4 | (1<<10) | (1<<4);
-    DMANow(3, startBgPal, ((unsigned short *)0x5000000), 512);
-    drawFullscreenImage4(winBgBitmap);
-    waitForVBlank();
-    flipPage();
     hideSprites();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
+
+    playSoundA(((signed char*) startmusic_data), startmusic_length, 1);
+
     state = WIN;
 }
 
 void win() {
+    updateWin();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
     if ((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
         initStart();
         goToStart();
-        waitForVBlank();
-        flipPage();
     }
 }
 
@@ -841,7 +932,5 @@ void lose() {
     if ((!(~(oldButtons) & ((1<<3))) && (~buttons & ((1<<3))))) {
         initStart();
         goToStart();
-        waitForVBlank();
-        flipPage();
     }
 }

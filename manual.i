@@ -41,9 +41,11 @@ typedef struct {
     int curFrame;
     int numFrames;
     int alert;
-    int route;
-    int path;
     int type;
+    int caught;
+    int distance;
+    int rowPrev;
+    int colPrev;
 } ENEMY;
 typedef struct {
     int row;
@@ -86,6 +88,7 @@ typedef struct {
     int timer;
 } CAMERA;
 typedef struct {
+    int location;
     int row;
     int col;
     int width;
@@ -107,6 +110,8 @@ extern void goToWin();
 
 
 
+
+
 extern PLAYER player;
 extern WEAPON weapon;
 extern ENEMY ghost;
@@ -120,15 +125,22 @@ extern EQUIPMENT uvlight;
 extern GHOSTSPOT ghostspot;
 extern CAMERA camera;
 extern OCCURRENCE occurrences[5];
+extern OCCURRENCE items[6];
 extern int screenBlock;
+extern int cheat;
 int path;
 int vOff;
 int hOff;
 int sanityTimer;
 int sanity;
 int seconds;
-int buttonTimer;
+int orbTimer;
 int score;
+int occurrencesCaught;
+int itemsCollected;
+int ghostBanished;
+int orbCol;
+int orbRow;
 
 void initGame();
 void updateGame();
@@ -160,10 +172,15 @@ void updateVideoCam();
 void updateSpiritBox();
 
 void initOccurrences();
-void updateOcurrences();
 void drawOccurrences();
 void updateCamera();
 void drawCamera();
+void hideText();
+
+void initItems();
+void drawItems();
+void updateItems();
+void ghostMovement();
 # 2 "manual.c" 2
 # 1 "gba.h" 1
 
@@ -239,7 +256,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 256 "gba.h"
+# 258 "gba.h"
 void hideSprites();
 
 
@@ -261,7 +278,7 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 312 "gba.h"
+# 314 "gba.h"
 typedef void (*ihp)(void);
 # 3 "manual.c" 2
 # 1 "manual.h" 1
@@ -272,22 +289,20 @@ typedef struct {
 } CURSOR;
 
 extern CURSOR cursor;
-extern OBJ_ATTR shadowOAM[128];
+int checkTile;
+int emptyTile;
 
 void initCursor();
-void drawManual();
 void updateCursor();
 # 4 "manual.c" 2
 
 CURSOR cursor;
-void initCursor() {
-    cursor.col = 0;
-    cursor.row = 0;
-    cursor.type = DEMON;
-}
 
-void drawManual() {
-    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), sizeof(shadowOAM)/2);
+void initCursor() {
+    cursor.col = 3;
+    cursor.row = 4;
+    checkTile = ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))];
+    emptyTile = ((screenblock *)0x6000000)[20].tilemap[((9) * (32) + (3))];
 }
 
 void updateCursor() {
@@ -305,31 +320,46 @@ void updateCursor() {
     }
 
     if (cursor.type == DEMON) {
-        cursor.col = 1;
-        cursor.row = 2;
+        cursor.col = 3;
+        cursor.row = 4;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((4) * (32) + (3))] = emptyTile;
     }
     if (cursor.type == JINN) {
-        cursor.col = 1;
-        cursor.row = 8;
+        cursor.col = 3;
+        cursor.row = 9;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((9) * (32) + (3))] = emptyTile;
     }
     if (cursor.type == ONI) {
-        cursor.col = 1;
+        cursor.col = 3;
         cursor.row = 14;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((14) * (32) + (3))] = emptyTile;
     }
     if (cursor.type == POLTERGEIST) {
-        cursor.col = 17;
-        cursor.row = 2;
+        cursor.col = 16;
+        cursor.row = 4;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((4) * (32) + (16))] = emptyTile;
     }
     if (cursor.type == BANSHEE) {
-        cursor.col = 17;
-        cursor.row = 8;
+        cursor.col = 16;
+        cursor.row = 9;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((9) * (32) + (16))] = emptyTile;
     }
     if (cursor.type == WRAITH) {
-        cursor.col = 17;
+        cursor.col = 16;
         cursor.row = 14;
+        ((screenblock *)0x6000000)[20].tilemap[((cursor.row) * (32) + (cursor.col))] = checkTile;
+    } else {
+        ((screenblock *)0x6000000)[20].tilemap[((14) * (32) + (16))] = emptyTile;
     }
 
-    shadowOAM[17].attr0 = ((cursor.row*8) & 0xFF) | (0 << 13) | (0 << 14);
-    shadowOAM[17].attr1 = ((cursor.col*8) & 0x1FF) | (0 << 14);
-    shadowOAM[17].attr2 = ((0)<<12) | ((8)*32+(6));
 }

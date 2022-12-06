@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -66,11 +66,11 @@
             "scaleInEditor": 1
         },
         "map.tmx": {
-            "scale": 2,
-            "selectedLayer": 3,
+            "scale": 1,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 236.25,
-                "y": 278
+                "x": 1283,
+                "y": 572
             }
         },
         "rugs.tsx": {
@@ -91,13 +91,12 @@
         }
     },
     "last.imagePath": "C:/Users/debor/Documents/School/CS2261/Milestone 2/gameBg",
-    "map.height": 32,
+    "map.height": 36,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "map.width": 32,
     "openFiles": [
-        "map.tmx",
         "wallpaper and flooring.tsx",
         "bathroom.tsx",
         "tables.tsx",
@@ -112,22 +111,23 @@
         "boxes.tsx",
         "kidsroom.tsx",
         "altars.tsx",
-        "collision.tsx"
+        "collision.tsx",
+        "map.tmx"
     ],
     "project": "furniture.tiled-project",
     "recentFiles": [
-        "collision.tsx",
-        "altars.tsx",
-        "kidsroom.tsx",
-        "boxes.tsx",
-        "kitchen.tsx",
-        "chairs.tsx",
-        "storage.tsx",
-        "beds.tsx",
-        "couchtables.tsx",
-        "couches.tsx",
+        "wallpaper and flooring.tsx",
+        "bathroom.tsx",
+        "tables.tsx",
+        "decorations.tsx",
         "rugs.tsx",
-        "decorations.tsx"
+        "couches.tsx",
+        "couchtables.tsx",
+        "beds.tsx",
+        "storage.tsx",
+        "chairs.tsx",
+        "kitchen.tsx",
+        "boxes.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

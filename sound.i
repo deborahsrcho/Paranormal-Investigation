@@ -76,7 +76,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 256 "gba.h"
+# 258 "gba.h"
 void hideSprites();
 
 
@@ -98,7 +98,7 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 312 "gba.h"
+# 314 "gba.h"
 typedef void (*ihp)(void);
 # 2 "sound.c" 2
 # 1 "sound.h" 1
