@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
-# 37 "main.c"
+# 30 "main.c"
 # 1 "gba.h" 1
 
 
@@ -101,7 +101,7 @@ typedef struct {
 } ANISPRITE;
 # 314 "gba.h"
 typedef void (*ihp)(void);
-# 38 "main.c" 2
+# 31 "main.c" 2
 # 1 "print.h" 1
 # 26 "print.h"
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stdint.h" 1 3 4
@@ -308,7 +308,7 @@ void mgba_printf(const char* string, ...);
 void mgba_break(void);
 uint8_t mgba_open(void);
 void mgba_close(void);
-# 39 "main.c" 2
+# 32 "main.c" 2
 # 1 "game.h" 1
 typedef struct {
     int row;
@@ -488,7 +488,7 @@ void initItems();
 void drawItems();
 void updateItems();
 void ghostMovement();
-# 40 "main.c" 2
+# 33 "main.c" 2
 # 1 "startBg.h" 1
 # 22 "startBg.h"
 extern const unsigned short startBgTiles[8000];
@@ -498,7 +498,7 @@ extern const unsigned short startBgMap[1024];
 
 
 extern const unsigned short startBgPal[256];
-# 41 "main.c" 2
+# 34 "main.c" 2
 # 1 "instructionsPg1.h" 1
 # 22 "instructionsPg1.h"
 extern const unsigned short instructionsPg1Tiles[6224];
@@ -508,7 +508,7 @@ extern const unsigned short instructionsPg1Map[1024];
 
 
 extern const unsigned short instructionsPg1Pal[256];
-# 42 "main.c" 2
+# 35 "main.c" 2
 # 1 "instructionsPg2.h" 1
 # 22 "instructionsPg2.h"
 extern const unsigned short instructionsPg2Tiles[6336];
@@ -518,7 +518,7 @@ extern const unsigned short instructionsPg2Map[1024];
 
 
 extern const unsigned short instructionsPg2Pal[256];
-# 43 "main.c" 2
+# 36 "main.c" 2
 # 1 "instructionsPg3.h" 1
 # 22 "instructionsPg3.h"
 extern const unsigned short instructionsPg3Tiles[6368];
@@ -528,7 +528,7 @@ extern const unsigned short instructionsPg3Map[1024];
 
 
 extern const unsigned short instructionsPg3Pal[256];
-# 44 "main.c" 2
+# 37 "main.c" 2
 # 1 "manualBg.h" 1
 # 22 "manualBg.h"
 extern const unsigned short manualBgTiles[6160];
@@ -538,7 +538,7 @@ extern const unsigned short manualBgMap[1024];
 
 
 extern const unsigned short manualBgPal[256];
-# 45 "main.c" 2
+# 38 "main.c" 2
 # 1 "pauseBg.h" 1
 # 22 "pauseBg.h"
 extern const unsigned short pauseBgTiles[7488];
@@ -548,7 +548,7 @@ extern const unsigned short pauseBgMap[1024];
 
 
 extern const unsigned short pauseBgPal[256];
-# 46 "main.c" 2
+# 39 "main.c" 2
 # 1 "winBg.h" 1
 # 22 "winBg.h"
 extern const unsigned short winBgTiles[6864];
@@ -558,7 +558,7 @@ extern const unsigned short winBgMap[1024];
 
 
 extern const unsigned short winBgPal[256];
-# 47 "main.c" 2
+# 40 "main.c" 2
 # 1 "loseBg.h" 1
 # 22 "loseBg.h"
 extern const unsigned short loseBgTiles[7664];
@@ -568,14 +568,14 @@ extern const unsigned short loseBgMap[1024];
 
 
 extern const unsigned short loseBgPal[256];
-# 48 "main.c" 2
+# 41 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 49 "main.c" 2
+# 42 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[27264];
@@ -585,7 +585,7 @@ extern const unsigned short backgroundMap[6144];
 
 
 extern const unsigned short backgroundPal[256];
-# 50 "main.c" 2
+# 43 "main.c" 2
 # 1 "manual.h" 1
 typedef struct {
     int row;
@@ -599,7 +599,7 @@ int emptyTile;
 
 void initCursor();
 void updateCursor();
-# 51 "main.c" 2
+# 44 "main.c" 2
 # 1 "sound.h" 1
 void setupSounds();
 void playSoundA(const signed char* sound, int length, int loops);
@@ -625,27 +625,27 @@ typedef struct{
 
 SOUND soundA;
 SOUND soundB;
-# 52 "main.c" 2
+# 45 "main.c" 2
 # 1 "losesound.h" 1
 
 
 extern const unsigned int losesound_sampleRate;
 extern const unsigned int losesound_length;
 extern const signed char losesound_data[];
-# 53 "main.c" 2
+# 46 "main.c" 2
 # 1 "startmusic.h" 1
 
 
 extern const unsigned int startmusic_sampleRate;
 extern const unsigned int startmusic_length;
 extern const signed char startmusic_data[];
-# 54 "main.c" 2
+# 47 "main.c" 2
 # 1 "instructions.h" 1
 int page;
 
 void initInstructions();
 void updatePage();
-# 55 "main.c" 2
+# 48 "main.c" 2
 # 1 "win.h" 1
 extern int score;
 int rank;
@@ -659,7 +659,7 @@ enum {GOLD, SILVER, BRONZE};
 
 void calculateRank();
 void updateWin();
-# 56 "main.c" 2
+# 49 "main.c" 2
 
 unsigned short buttons;
 unsigned short oldButtons;

@@ -1,9 +1,9 @@
 /*
-Milestone 4
+Final Project
 Deborah Cho
 NAVIGATING THE STATE MACHINE
 - START - press *start* while in WIN or LOSE, press *select* while in INSTRUCTIONS, press *R* while in PAUSE
-- INSTRUCTIONS - press *select* while in START
+- INSTRUCTIONS - press *select* while in START, or *L* while in GAME
 - GAME - press *start* while in START or MANUAL, *select* while in PAUSE
 - MANUAL - press *start* while in GAME
 - PAUSE - press *select* while in GAME
@@ -20,19 +20,12 @@ CONTROLS
     - select to go to PAUSE
 - MANUAL state:
     - left, right to change selection
+- CHEAT: Press *L* to toggle cheat mode in START
+    - Place all items in front of player
+    - Place all occurrences in front of player
+    - Equipment displays clues immediately
+    - Puts Ghost Spot close to player
 - see above for state machine controls
-MILESTONE 4 IMPLEMENTATIONS
-- Sprites, Backgrounds and Collision Maps, Music and Sound Effects, XL Background, Changing Sprite Palette and BG Tiles during runtime, Rank based
-on score
-- Win Condition
-    - (NEW) When collecting all 6 items and turning them in to the altar, the game will end
-NOT IMPLEMENTED
-- Varying Ghost Routes
-- Varying Ghost Spots
-- Some display text/numbers
-KNOWN BUGS
-- some sprites are not overlapping correctly
-- multiple equipment can be read at one time
 */
 #include "gba.h"
 #include "print.h"

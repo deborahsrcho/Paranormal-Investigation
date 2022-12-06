@@ -272,7 +272,11 @@ void initGhost() {
 
 void initghostSpot() {
     // Assign random ghost spot at start of game
-    ghostspot.location = rand() % 5;
+    if (!cheat) {
+        ghostspot.location = rand() % 5;
+    } else {
+        ghostspot.location = 0;
+    }
     if (ghostspot.location == 0) {
         ghostspot.col = 32;
         ghostspot.row = 80;
@@ -483,8 +487,8 @@ void updatePlayer() {
     } 
 
     // Handle Player-Hiding Spot Collision
-    if (!ghost.alert && (collisionCheck(collisionMap, MAPWIDTH, player.col, player.row) == 2 | collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row) == 2
-    | collisionCheck(collisionMap, MAPWIDTH, player.col, player.row + player.height-1) == 2 | collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row + player.height-1) == 2)) {
+    if (!ghost.alert && (collisionCheck(collisionMap, MAPWIDTH, player.col, player.row) == 2 || collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row) == 2
+    || collisionCheck(collisionMap, MAPWIDTH, player.col, player.row + player.height-1) == 2 || collisionCheck(collisionMap, MAPWIDTH, player.col + player.width-1, player.row + player.height-1) == 2)) {
         if (player.hidden == 0) {
             shadowOAM[47].attr0 = ((150) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
             shadowOAM[47].attr1 = ((SCREENWIDTH/2 - 12 - 1) & COLMASK) | ATTR1_TINY;

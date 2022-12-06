@@ -1464,7 +1464,11 @@ void initGhost() {
 
 void initghostSpot() {
 
-    ghostspot.location = rand() % 5;
+    if (!cheat) {
+        ghostspot.location = rand() % 5;
+    } else {
+        ghostspot.location = 0;
+    }
     if (ghostspot.location == 0) {
         ghostspot.col = 32;
         ghostspot.row = 80;
@@ -1675,8 +1679,8 @@ void updatePlayer() {
     }
 
 
-    if (!ghost.alert && (collisionCheck(collisionMap, 512, player.col, player.row) == 2 | collisionCheck(collisionMap, 512, player.col + player.width-1, player.row) == 2
-    | collisionCheck(collisionMap, 512, player.col, player.row + player.height-1) == 2 | collisionCheck(collisionMap, 512, player.col + player.width-1, player.row + player.height-1) == 2)) {
+    if (!ghost.alert && (collisionCheck(collisionMap, 512, player.col, player.row) == 2 || collisionCheck(collisionMap, 512, player.col + player.width-1, player.row) == 2
+    || collisionCheck(collisionMap, 512, player.col, player.row + player.height-1) == 2 || collisionCheck(collisionMap, 512, player.col + player.width-1, player.row + player.height-1) == 2)) {
         if (player.hidden == 0) {
             shadowOAM[47].attr0 = ((150) & 0xFF) | (0 << 13) | (0 << 14);
             shadowOAM[47].attr1 = ((240/2 - 12 - 1) & 0x1FF) | (0 << 14);
