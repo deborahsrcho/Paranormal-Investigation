@@ -691,57 +691,61 @@ goToWin:
 	ldr	r3, .L94
 	mov	lr, pc
 	bx	r3
+	ldr	r3, .L94+4
+	mov	lr, pc
+	bx	r3
 	mov	r2, #67108864
 	mov	r3, #4608
 	mov	r1, #3840
-	ldr	r4, .L94+4
+	ldr	r4, .L94+8
 	strh	r3, [r2]	@ movhi
 	mov	r0, #3
 	strh	r1, [r2, #10]	@ movhi
 	add	r3, r3, #2256
 	mov	r2, #100663296
-	ldr	r1, .L94+8
+	ldr	r1, .L94+12
 	mov	lr, pc
 	bx	r4
 	mov	r3, #256
 	mov	r2, #83886080
 	mov	r0, #3
-	ldr	r1, .L94+12
+	ldr	r1, .L94+16
 	mov	lr, pc
 	bx	r4
 	mov	r0, #3
-	ldr	r2, .L94+16
-	ldr	r1, .L94+20
+	ldr	r2, .L94+20
+	ldr	r1, .L94+24
 	mov	r3, #1024
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L94+24
+	ldr	r3, .L94+28
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L94+28
+	ldr	r3, .L94+32
 	mov	lr, pc
 	bx	r3
 	mov	r3, #512
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L94+32
+	ldr	r1, .L94+36
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L94+36
+	ldr	r3, .L94+40
 	mov	r2, #1
 	ldr	r1, [r3]
-	ldr	r0, .L94+40
-	ldr	r3, .L94+44
+	ldr	r0, .L94+44
+	ldr	r3, .L94+48
 	mov	lr, pc
 	bx	r3
 	mov	r2, #5
-	ldr	r3, .L94+48
+	ldr	r3, .L94+52
 	pop	{r4, lr}
 	str	r2, [r3]
 	bx	lr
 .L95:
 	.align	2
 .L94:
+	.word	stopSound
 	.word	calculateRank
 	.word	DMANow
 	.word	winBgTiles
@@ -985,57 +989,61 @@ goToLose:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	mov	r2, #67108864
+	ldr	r3, .L141
+	mov	lr, pc
+	bx	r3
 	mov	r5, #512
+	mov	r2, #67108864
 	mov	r1, #7936
-	ldr	r4, .L141
+	ldr	r4, .L141+4
 	strh	r5, [r2]	@ movhi
 	mov	r0, #3
 	strh	r1, [r2, #10]	@ movhi
-	ldr	r3, .L141+4
+	ldr	r3, .L141+8
 	mov	r2, #100663296
-	ldr	r1, .L141+8
+	ldr	r1, .L141+12
 	mov	lr, pc
 	bx	r4
 	mov	r3, #256
 	mov	r2, #83886080
 	mov	r0, #3
-	ldr	r1, .L141+12
+	ldr	r1, .L141+16
 	mov	lr, pc
 	bx	r4
 	mov	r0, #3
-	ldr	r2, .L141+16
-	ldr	r1, .L141+20
+	ldr	r2, .L141+20
+	ldr	r1, .L141+24
 	mov	r3, #1024
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L141+24
-	mov	lr, pc
-	bx	r3
 	ldr	r3, .L141+28
 	mov	lr, pc
 	bx	r3
 	ldr	r3, .L141+32
+	mov	lr, pc
+	bx	r3
+	ldr	r3, .L141+36
 	mov	r2, #0
 	ldr	r1, [r3]
-	ldr	r0, .L141+36
-	ldr	r3, .L141+40
+	ldr	r0, .L141+40
+	ldr	r3, .L141+44
 	mov	lr, pc
 	bx	r3
 	mov	r3, r5
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L141+44
+	ldr	r1, .L141+48
 	mov	lr, pc
 	bx	r4
 	mov	r2, #6
-	ldr	r3, .L141+48
+	ldr	r3, .L141+52
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
 .L142:
 	.align	2
 .L141:
+	.word	stopSound
 	.word	DMANow
 	.word	7664
 	.word	loseBgTiles

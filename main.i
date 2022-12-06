@@ -889,6 +889,7 @@ void pause() {
 }
 
 void goToWin() {
+    stopSound();
     calculateRank();
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<9) | (1<<12);
     (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((15)<<8) | (0<<7) | (0<<14);
@@ -915,6 +916,7 @@ void win() {
 }
 
 void goToLose() {
+    stopSound();
     (*(volatile unsigned short *)0x4000000) = 0 | (1<<9);
     (*(volatile unsigned short*)0x400000A) = ((0)<<2) | ((31)<<8) | (0<<7) | (0<<14);
     DMANow(3, loseBgTiles, &((charblock *)0x6000000)[0], 15328 / 2);

@@ -275,6 +275,7 @@ void pause() {
 }
 
 void goToWin() {
+    stopSound();
     calculateRank();
     REG_DISPCTL = MODE0 | BG1_ENABLE | SPRITE_ENABLE;
     REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(15) | BG_4BPP | BG_SIZE_SMALL;
@@ -301,6 +302,7 @@ void win() {
 }
 
 void goToLose() {
+    stopSound();
     REG_DISPCTL = MODE0 | BG1_ENABLE;
     REG_BG1CNT = BG_CHARBLOCK(0) | BG_SCREENBLOCK(31) | BG_4BPP | BG_SIZE_SMALL;
     DMANow(3, loseBgTiles, &CHARBLOCK[0], loseBgTilesLen / 2);
